@@ -1,10 +1,7 @@
 import argparse
-import torchvision
 
 from modules.data import load_image_tensor
 from modules.logging import init_logger, setup_logging
-
-from PIL import Image
 
 LOGGER = init_logger(__name__)
 
