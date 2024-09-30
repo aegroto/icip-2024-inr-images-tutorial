@@ -1,6 +1,7 @@
 import argparse
 import torchvision
 
+from modules.data import load_image_tensor
 from modules.logging import init_logger, setup_logging
 
 from PIL import Image
@@ -20,10 +21,7 @@ def main():
 
     LOGGER.debug(f"Command-line args: {args}")
 
-    pil_image = Image.open(args.file_path)
-    image = torchvision.transforms.functional.to_tensor(pil_image)
-
-    LOGGER.debug(f"Loaded image shape: {image.shape}")
+    image = load_image_tensor(args.file_path)
 
 if __name__ == "__main__":
     main()

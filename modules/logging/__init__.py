@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 def __env_logging_config():
     try:
@@ -9,19 +10,24 @@ def __env_logging_config():
 
 def get_log_level(target_module_name=None):
     if target_module_name is None:
-        target_module_name == "__root__"
+        target_module_name = "__root__"
 
     config = __env_logging_config()
 
     for module_config in config.split(","):
-        (module_name, log_level) = tuple(module_config.split("="))
+        (module_expr, log_level) = tuple(module_config.split("="))
 
-        if module_name == target_module_name:
+        if re.match(module_expr, target_module_name):
             return log_level
+
+    return None
 
 def init_logger(module_name):
     logger = logging.getLogger(module_name)
-    logger.setLevel(get_log_level(module_name))
+    level = get_log_level(module_name)
+    if level is not None:
+        logger.setLevel(level)
+
     return logger
 
 def setup_logging():
