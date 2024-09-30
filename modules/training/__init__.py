@@ -26,18 +26,10 @@ class Trainer:
     def __generate_batch(self) -> TrainingBatch:
         reshaped_target_image = self.__target_image.movedim(0, 2)
 
-        image_shape = reshaped_target_image.shape
-        (height, width) = (image_shape[0], image_shape[1])
-
-        coordinates = torch.cartesian_prod(
-            torch.linspace(0.0, 1.0, height),
-            torch.linspace(0.0, 1.0, width),
-        ).unflatten(0, (height, width))
-
-        self.__logger.debug(f"Generated coordinates shape: {coordinates.shape}")
+        input = self.__model.generate_input(reshaped_target_image.shape)
 
         batch = TrainingBatch()
-        batch.add_sample(TrainingSample(coordinates, reshaped_target_image))
+        batch.add_sample(TrainingSample(input, reshaped_target_image))
 
         return batch
 
