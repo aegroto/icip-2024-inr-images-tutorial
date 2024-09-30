@@ -1,0 +1,14 @@
+[project]
+authors = ["aegroto <aegroto@protonmail.com>"]
+channels = ["conda-forge"]
+description = "ICIP 2024 - Implicit Image Compression 101"
+name = "icip-2024-inr-images-tutorial"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+fit = "python -m bin.fit"
+
+[dependencies]
+python = "3.12"
+pytorch = "2.4.0"
