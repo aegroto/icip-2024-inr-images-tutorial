@@ -2,11 +2,13 @@ import logging
 import os
 import re
 
+
 def __env_logging_config():
     try:
-        return os.environ['LOG_LEVEL']
+        return os.environ["LOG_LEVEL"]
     except:
-        return '__root__=INFO'
+        return "__root__=INFO"
+
 
 def get_log_level(target_module_name=None):
     if target_module_name is None:
@@ -22,6 +24,7 @@ def get_log_level(target_module_name=None):
 
     return None
 
+
 def init_logger(module_name):
     logger = logging.getLogger(module_name)
     level = get_log_level(module_name)
@@ -30,9 +33,9 @@ def init_logger(module_name):
 
     return logger
 
+
 def setup_logging():
     logging.basicConfig(
-        level=get_log_level(), 
-        format="[%(levelname)s] %(asctime)s - %(name)s: %(message)s"
+        level=get_log_level(),
+        format="[%(levelname)s] %(asctime)s - %(name)s: %(message)s",
     )
-

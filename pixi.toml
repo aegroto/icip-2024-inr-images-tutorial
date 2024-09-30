@@ -8,6 +8,7 @@ version = "0.1.0"
 
 [tasks]
 fit = "python -m bin.fit"
+format = "black ."
 
 [dependencies]
 python = "3.12"
@@ -15,3 +16,4 @@ pytorch = "2.4.0"
 scikit-image = ">=0.24.0,<0.25"
 pillow = ">=10.4.0,<11"
 torchvision = ">=0.19.1,<0.20"
+black = ">=24.8.0,<25"

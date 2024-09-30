@@ -5,7 +5,7 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
-class ImplicitImage(torch.nn.Module):
+class ImplicitImageRepresentation(torch.nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -16,8 +16,3 @@ class ImplicitImage(torch.nn.Module):
     def postprocess(network_output: Tensor) -> Tensor:
         LOGGER.warning("Call to default postprocess implementation")
         return network_output
-
-
-
-
-        
