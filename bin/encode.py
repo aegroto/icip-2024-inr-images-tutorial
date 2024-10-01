@@ -19,6 +19,42 @@ def __load_args():
     return parser.parse_args()
 
 
+def __run_phase(config, args, phase_name, device, initial_state_dict=None):
+    base_folder = f"{args.results_folder}/{phase_name}/"
+
+    state_dump_path = f"{base_folder}/state.pth"
+    inferred_image_path = f"{base_folder}/inferred.png"
+    stats_dump_path = f"{base_folder}/stats.json"
+
+    os.makedirs(base_folder, exist_ok=True)
+
+    image_resolution = read_image_resolution(args.uncompressed_image_path)
+
+    trained_state_dict = fit(
+        config,
+        args.uncompressed_image_path,
+        device,
+        state_dump_path,
+        initial_state_dict,
+    )
+    infer(
+        config,
+        trained_state_dict,
+        image_resolution,
+        inferred_image_path,
+        device,
+    )
+    export_stats(
+        args.uncompressed_image_path,
+        inferred_image_path,
+        state_dump_path,
+        stats_dump_path,
+        device,
+    )
+
+    return trained_state_dict
+
+
 def main():
     setup_logging()
     args = __load_args()
@@ -26,27 +62,10 @@ def main():
 
     config = load_config(args.config)
     device = load_device()
-    image_resolution = read_image_resolution(args.uncompressed_image_path)
 
-    folder = args.results_folder
-    fitted_state_dump_path = f"{folder}/fitted/state.pth"
-    fitted_inferred_image_path = f"{folder}/fitted/inferred.png"
-    stats_dump_path = f"{folder}/fitted/stats.json"
-
-    os.makedirs(f"{folder}/fitted/", exist_ok=True)
-
-    fitted_state_dict = fit(
-        config, args.uncompressed_image_path, device, fitted_state_dump_path
-    )
-    infer(
-        config, fitted_state_dict, image_resolution, fitted_inferred_image_path, device
-    )
-    export_stats(
-        args.uncompressed_image_path,
-        fitted_inferred_image_path,
-        fitted_state_dump_path,
-        stats_dump_path,
-        device,
+    fitted_state_dict = __run_phase(config.fitting, args, "fitting", device)
+    _ = __run_phase(
+        config.quantization, args, "quantization", device, fitted_state_dict
     )
 
 

@@ -30,9 +30,12 @@ def main():
     fit(config, args.file_path, device, args.state_dump_path)
 
 
-def fit(config, image_file_path, device, state_dump_path=None):
+def fit(config, image_file_path, device, state_dump_path=None, initial_state_dict=None):
     image = load_image_tensor(image_file_path).to(device)
     model = copy.deepcopy(config.model).to(device)
+
+    if initial_state_dict is not None:
+        model.load_state_dict(initial_state_dict)
 
     LOGGER.debug(f"Model architecture: {model}")
 

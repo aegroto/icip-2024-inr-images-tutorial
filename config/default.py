@@ -1,3 +1,4 @@
+from config import Configuration
 from modules.nn.image_representation.siren import SirenRepresentation
 from modules.nn.positional_encoder import PositionalEncoderConfig
 from modules.nn.siren import SirenConfig
@@ -13,6 +14,16 @@ model = SirenRepresentation(
     ),
 )
 
-trainer_configuration = TrainerConfiguration(
-    iterations=10000, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+fitting = Configuration(
+    model=model,
+    trainer_configuration=TrainerConfiguration(
+        iterations=100, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+    ),
+)
+
+quantization = Configuration(
+    model=model,
+    trainer_configuration=TrainerConfiguration(
+        iterations=25, optimizer_parameters={"lr": 1.0e-4}, log_interval=5
+    ),
 )
