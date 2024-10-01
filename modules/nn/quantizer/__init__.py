@@ -4,6 +4,7 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
+
 class Quantizer(nn.Module):
     def quantize(self, x: Tensor) -> Tensor:
         LOGGER.warning("Call to default quantize implementation")

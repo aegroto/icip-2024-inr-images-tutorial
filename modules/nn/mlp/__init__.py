@@ -28,7 +28,9 @@ class MultiLayerPerceptron(nn.Module):
         layers.append(activation_builder())
 
         for i in range(config.hidden_layers):
-            layers.append(QuantizableLinear(config.hidden_features, config.hidden_features))
+            layers.append(
+                QuantizableLinear(config.hidden_features, config.hidden_features)
+            )
             layers.append(activation_builder())
 
         layers.append(QuantizableLinear(config.hidden_features, config.output_features))

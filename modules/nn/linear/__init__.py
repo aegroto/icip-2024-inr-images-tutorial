@@ -5,8 +5,11 @@ from torch import Tensor, nn
 
 from modules.nn.quantizer.dummy import DummyQuantizer
 
+
 class QuantizableLinear(nn.Module):
-    def __init__(self, in_features: int, out_features: int, quantizer_builder: Callable = None):
+    def __init__(
+        self, in_features: int, out_features: int, quantizer_builder: Callable = None
+    ):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features

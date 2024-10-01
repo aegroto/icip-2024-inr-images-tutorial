@@ -15,7 +15,7 @@ class SirenRepresentation(ImplicitImageRepresentation):
         self,
         encoder_config: PositionalEncoderConfig,
         network_config: SirenConfig,
-        quantizer_builder: Callable = None
+        quantizer_builder: Callable = None,
     ):
         super().__init__()
 
