@@ -4,8 +4,11 @@ import torch
 from skimage import io
 
 from modules.data import dump_reconstructed_tensor, load_image_tensor
+from modules.device import load_device
 from modules.logging import init_logger, setup_logging
-from modules.nn.coordinates_based import CoordinatesBasedRepresentation
+from modules.nn.image_representation.coordinates_based import CoordinatesBasedRepresentation
+from modules.nn.mlp import MultiLayerPerceptronConfig
+from modules.nn.positional_encoder import PositionalEncoderConfig
 from modules.training import Trainer, TrainerConfiguration
 
 LOGGER = init_logger(__name__)
@@ -32,15 +35,26 @@ def main():
 
     LOGGER.debug(f"Command-line args: {args}")
 
+    device = load_device()
+
     state_dict = torch.load(args.state_path, weights_only=True)
 
-    model = CoordinatesBasedRepresentation()
+    model = CoordinatesBasedRepresentation(
+        encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
+        network_config=MultiLayerPerceptronConfig(
+            input_features=2,
+            hidden_features=512,
+            hidden_layers=2,
+            output_features=3,
+            activation_builder=lambda: torch.nn.GELU(),
+        ),
+    ).to(device)
     model.load_state_dict(state_dict)
     model.eval()
 
     (target_height, target_width) = __parse_resolution(args.resolution)
     target_shape = torch.Size([target_height, target_width])
-    input = model.generate_input(target_shape)
+    input = model.generate_input(target_shape).to(device)
 
     with torch.no_grad():
         reconstructed_tensor = model(input)

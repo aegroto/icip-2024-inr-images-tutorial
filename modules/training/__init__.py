@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from torch import nn, Tensor
 from modules.device import load_device
 from modules.logging import init_logger
-from modules.nn.base import ImplicitImageRepresentation
+from modules.nn.image_representation.base import ImplicitImageRepresentation
 from modules.training.batch import TrainingBatch, TrainingSample
 
 

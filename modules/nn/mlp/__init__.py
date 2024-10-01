@@ -10,10 +10,10 @@ LOGGER = init_logger(__name__)
 
 @dataclass
 class MultiLayerPerceptronConfig:
-    input_features: int
-    hidden_features: int
-    hidden_layers: int
-    output_features: int
+    input_features: int = None
+    hidden_features: int = None
+    hidden_layers: int = None
+    output_features: int = None
     activation_builder: Callable = None
 
 
