@@ -1,4 +1,5 @@
 import argparse
+from modules.device import load_device
 import torch
 
 from modules.data import load_image_tensor
@@ -18,14 +19,17 @@ def __load_args():
 
 def main():
     setup_logging()
-    LOGGER.info("Running")
+
+    LOGGER.info("Running, ")
 
     args = __load_args()
 
     LOGGER.debug(f"Command-line args: {args}")
 
-    image = load_image_tensor(args.file_path)
-    model = CoordinatesBasedRepresentation()
+    device = load_device()
+
+    image = load_image_tensor(args.file_path).to(device)
+    model = CoordinatesBasedRepresentation().to(device)
 
     trainer = Trainer(TrainerConfiguration(
         iterations=100

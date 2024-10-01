@@ -4,6 +4,7 @@ import statistics
 from dataclasses import dataclass, field
 
 from torch import nn, Tensor
+from modules.device import load_device
 from modules.logging import init_logger
 from modules.nn.base import ImplicitImageRepresentation
 from modules.training.batch import TrainingBatch, TrainingSample
@@ -15,18 +16,19 @@ class TrainerConfiguration:
     name: str = __name__
 
 class Trainer:
-    def __init__(self, config: TrainerConfiguration, model: ImplicitImageRepresentation, target_image: Tensor) -> None:
+    def __init__(self, config: TrainerConfiguration, model: ImplicitImageRepresentation, target_image: Tensor, device = None) -> None:
         self.__model = model
         self.__target_image = target_image
 
         self.__config = config
         self.__logger = init_logger(config.name)
 
+        self.__device = device or load_device()
 
     def __generate_batch(self) -> TrainingBatch:
-        reshaped_target_image = self.__target_image.movedim(0, 2)
+        reshaped_target_image = self.__target_image.movedim(0, 2).to(self.__device)
 
-        input = self.__model.generate_input(reshaped_target_image.shape)
+        input = self.__model.generate_input(reshaped_target_image.shape).to(self.__device)
 
         batch = TrainingBatch()
         batch.add_sample(TrainingSample(input, reshaped_target_image))
