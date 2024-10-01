@@ -37,7 +37,13 @@ def main():
 
     trainer = Trainer(config.trainer_configuration, model, image, device)
 
-    trainer.train()
+    try:
+        trainer.train()
+    except KeyboardInterrupt:
+        LOGGER.warning("Training interrupted, dumping the current model")
+
+    model, best_loss = trainer.best_result()
+    LOGGER.info(f"Best loss value: {best_loss}")
 
     model.eval()
     torch.save(model.state_dict(), args.state_dump_path)

@@ -1,4 +1,5 @@
 import torch
+import copy
 import statistics
 
 from dataclasses import dataclass, field
@@ -52,9 +53,15 @@ class Trainer:
 
         self.__logger.debug(content)
 
+    def best_result(self):
+        return (self.__best_model, self.__best_loss_value)
+
     def train(self):
         batch = self.__generate_batch()
         model = self.__model
+
+        self.__best_loss_value = float('inf')
+        self.__best_model = copy.deepcopy(model)
 
         self.__current_iterations = 0
 
@@ -66,7 +73,7 @@ class Trainer:
 
         for iteration in range(1, self.__config.iterations + 1):
             self.__current_iterations += 1
-            self.__log(f"Iteration #{iteration}")
+            self.__log(f"Iteration #{iteration}/{self.__config.iterations}")
 
             loss_norm = 1.0 / batch.size()
 
@@ -87,5 +94,9 @@ class Trainer:
             average_loss_value = statistics.mean(iteration_loss_values)
 
             self.__log(f"Average iteration loss value: {average_loss_value:.5f}")
+
+            if average_loss_value < self.__best_loss_value:
+                self.__best_loss_value = average_loss_value
+                self.__best_model = copy.deepcopy(model)
 
             optimizer.step()

@@ -14,5 +14,5 @@ model = SirenRepresentation(
 )
 
 trainer_configuration = TrainerConfiguration(
-    iterations=100, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+    iterations=10000, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
 )
