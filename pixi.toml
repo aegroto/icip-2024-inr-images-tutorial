@@ -10,6 +10,7 @@ version = "0.1.0"
 fit = "python -m bin.fit"
 capabilities = "python -m bin.capabilities"
 infer = "python -m bin.infer"
+export_stats = "python -m bin.export_stats"
 format = "ruff format"
 lint = "ruff check"
 
