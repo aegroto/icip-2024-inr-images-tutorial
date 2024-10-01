@@ -7,8 +7,14 @@ LOGGER = init_logger(__name__)
 
 
 class UniformQuantizer(Quantizer):
+    def __init__(self, bits):
+        super().__init__()
+        self.__bits = bits
+
     def quantize(self, x: Tensor) -> Tensor:
-        raise NotImplementedError
+        LOGGER.warning("Uniform quantization not implemented yet")
+        return x
 
     def dequantize(self, x: Tensor) -> Tensor:
-        raise NotImplementedError
+        LOGGER.warning("Uniform dequantization not implemented yet")
+        return x

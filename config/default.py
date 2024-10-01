@@ -1,6 +1,7 @@
 from config import Configuration
 from modules.nn.image_representation.siren import SirenRepresentation
 from modules.nn.positional_encoder import PositionalEncoderConfig
+from modules.nn.quantizer.uniform import UniformQuantizer
 from modules.nn.siren import SirenConfig
 from modules.training import TrainerConfiguration
 
@@ -26,4 +27,5 @@ quantization = Configuration(
     trainer_configuration=TrainerConfiguration(
         iterations=25, optimizer_parameters={"lr": 1.0e-4}, log_interval=5
     ),
+    quantizer_builder=lambda _: UniformQuantizer(8)
 )

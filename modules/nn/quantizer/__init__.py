@@ -1,3 +1,4 @@
+from typing import Callable
 from torch import Tensor, nn
 
 from modules.logging import init_logger
@@ -24,3 +25,9 @@ class Quantizer(nn.Module):
 class IQuantizable:
     def set_quantizer(self, quantizer: Quantizer):
         raise NotImplementedError
+
+def inject_quantizer(module: nn.Module, quantizer_builder: Callable):
+    LOGGER.debug(f"Injecting quantizer in module {module}")
+
+    if isinstance(module, IQuantizable):
+        module.set_quantizer(quantizer_builder(module))

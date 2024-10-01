@@ -6,6 +6,7 @@ import torch
 from modules.data import load_image_tensor
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
+from modules.nn.quantizer import inject_quantizer
 from modules.training import Trainer
 
 LOGGER = init_logger(__name__)
@@ -33,6 +34,9 @@ def main():
 def fit(config, image_file_path, device, state_dump_path=None, initial_state_dict=None):
     image = load_image_tensor(image_file_path).to(device)
     model = copy.deepcopy(config.model).to(device)
+
+    if config.quantizer_builder is not None:
+        model.apply(lambda module: inject_quantizer(module, config.quantizer_builder))
 
     if initial_state_dict is not None:
         model.load_state_dict(initial_state_dict)
