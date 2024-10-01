@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import torch
 
 from skimage import io
@@ -19,6 +20,7 @@ def __load_args():
     parser.add_argument("state_path", type=str)
     parser.add_argument("resolution", type=str)
     parser.add_argument("output_dump_path", type=str)
+    parser.add_argument("--config", type=str, required=False, default="default")
     return parser.parse_args()
 
 
@@ -36,19 +38,11 @@ def main():
     LOGGER.debug(f"Command-line args: {args}")
 
     device = load_device()
+    config = importlib.import_module(f"config.{args.config}")
 
     state_dict = torch.load(args.state_path, weights_only=True)
 
-    model = CoordinatesBasedRepresentation(
-        encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
-        network_config=MultiLayerPerceptronConfig(
-            input_features=2,
-            hidden_features=512,
-            hidden_layers=2,
-            output_features=3,
-            activation_builder=lambda: torch.nn.GELU(),
-        ),
-    ).to(device)
+    model = config.model.to(device)
     model.load_state_dict(state_dict)
     model.eval()
 

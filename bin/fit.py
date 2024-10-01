@@ -1,3 +1,4 @@
+import importlib
 import argparse
 from modules.device import load_device
 import torch
@@ -18,6 +19,7 @@ def __load_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("file_path", type=str)
     parser.add_argument("state_dump_path", type=str)
+    parser.add_argument("--config", type=str, required=False, default="default")
     return parser.parse_args()
 
 
@@ -31,24 +33,14 @@ def main():
     LOGGER.debug(f"Command-line args: {args}")
 
     device = load_device()
+    config = importlib.import_module(f"config.{args.config}")
 
     image = load_image_tensor(args.file_path).to(device)
-    model = CoordinatesBasedRepresentation(
-        encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
-        network_config=MultiLayerPerceptronConfig(
-            input_features=2,
-            hidden_features=512,
-            hidden_layers=2,
-            output_features=3,
-            activation_builder=lambda: torch.nn.GELU(),
-        ),
-    ).to(device)
+    model = config.model.to(device)
 
     LOGGER.debug(f"Model architecture: {model}")
 
-    trainer = Trainer(TrainerConfiguration(iterations=1000, optimizer_parameters={
-        "lr": 1.0e-2
-    }), model, image, device)
+    trainer = Trainer(config.trainer_configuration, model, image, device)
 
     trainer.train()
 
