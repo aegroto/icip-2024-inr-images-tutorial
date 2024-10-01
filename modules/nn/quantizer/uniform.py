@@ -8,9 +8,7 @@ LOGGER = init_logger(__name__)
 
 class UniformQuantizer(Quantizer):
     def quantize(self, x: Tensor) -> Tensor:
-        LOGGER.warning("Call to default quantize implementation")
-        return None
+        raise NotImplementedError
 
     def dequantize(self, x: Tensor) -> Tensor:
-        LOGGER.warning("Call to default dequantize implementation")
-        return None
+        raise NotImplementedError

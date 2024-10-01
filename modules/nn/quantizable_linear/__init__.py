@@ -3,10 +3,11 @@ import torch
 import math
 from torch import Tensor, nn
 
+from modules.nn.quantizer import IQuantizable
 from modules.nn.quantizer.dummy import DummyQuantizer
 
 
-class QuantizableLinear(nn.Module):
+class QuantizableLinear(nn.Module, IQuantizable):
     def __init__(
         self, in_features: int, out_features: int, quantizer_builder: Callable = None
     ):

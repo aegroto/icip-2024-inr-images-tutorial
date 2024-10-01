@@ -7,12 +7,10 @@ LOGGER = init_logger(__name__)
 
 class Quantizer(nn.Module):
     def quantize(self, x: Tensor) -> Tensor:
-        LOGGER.warning("Call to default quantize implementation")
-        return None
+        raise NotImplementedError
 
     def dequantize(self, x: Tensor) -> Tensor:
-        LOGGER.warning("Call to default dequantize implementation")
-        return None
+        raise NotImplementedError
 
     def forward(self, unquantized: Tensor) -> Tensor:
         dequantized = self.dequantize(self.quantize(unquantized))
@@ -21,3 +19,8 @@ class Quantizer(nn.Module):
         estimated_quantized = unquantized + error
 
         return estimated_quantized
+
+
+class IQuantizable:
+    def set_quantizer(self, quantizer: Quantizer):
+        raise NotImplementedError

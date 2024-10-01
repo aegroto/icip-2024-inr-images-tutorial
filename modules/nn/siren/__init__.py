@@ -3,7 +3,7 @@ from typing import Callable
 from torch import Tensor, nn
 
 from modules.logging import init_logger
-from modules.nn.linear import QuantizableLinear
+from modules.nn.quantizable_linear import QuantizableLinear
 from modules.nn.siren.activation import Sine
 from modules.nn.siren.initialization import (
     initialize_first_siren_layer,
