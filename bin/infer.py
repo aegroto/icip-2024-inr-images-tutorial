@@ -7,7 +7,9 @@ from skimage import io
 from modules.data import dump_reconstructed_tensor, load_image_tensor
 from modules.device import load_device
 from modules.logging import init_logger, setup_logging
-from modules.nn.image_representation.coordinates_based import CoordinatesBasedRepresentation
+from modules.nn.image_representation.coordinates_based import (
+    CoordinatesBasedRepresentation,
+)
 from modules.nn.mlp import MultiLayerPerceptronConfig
 from modules.nn.positional_encoder import PositionalEncoderConfig
 from modules.training import Trainer, TrainerConfiguration

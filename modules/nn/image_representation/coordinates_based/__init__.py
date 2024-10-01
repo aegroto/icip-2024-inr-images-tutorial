@@ -19,7 +19,9 @@ class CoordinatesBasedRepresentation(ImplicitImageRepresentation):
 
         self.encoder = PositionalEncoder(encoder_config)
 
-        network_config.input_features = self.encoder.output_features_for(network_config.input_features)
+        network_config.input_features = self.encoder.output_features_for(
+            network_config.input_features
+        )
         self.network = MultiLayerPerceptron(network_config)
 
     def generate_input(self, output_shape: Size) -> Tensor:
