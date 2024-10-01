@@ -5,6 +5,7 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
+
 class Sine(nn.Module):
     def __init__(self, period: float):
         super().__init__()

@@ -14,6 +14,7 @@ from modules.training.batch import TrainingBatch, TrainingSample
 class TrainerConfiguration:
     iterations: int
     optimizer_parameters: dict = field(default_factory=dict)
+    log_interval: int = 1
     name: str = __name__
 
 
@@ -45,9 +46,17 @@ class Trainer:
 
         return batch
 
+    def __log(self, content):
+        if self.__current_iterations % self.__config.log_interval != 0:
+            return
+
+        self.__logger.debug(content)
+
     def train(self):
         batch = self.__generate_batch()
         model = self.__model
+
+        self.__current_iterations = 0
 
         optimizer = torch.optim.Adam(
             model.parameters(), **self.__config.optimizer_parameters
@@ -56,7 +65,8 @@ class Trainer:
         loss_fn = nn.MSELoss()
 
         for iteration in range(1, self.__config.iterations + 1):
-            self.__logger.debug(f"Iteration #{iteration}")
+            self.__current_iterations += 1
+            self.__log(f"Iteration #{iteration}")
 
             loss_norm = 1.0 / batch.size()
 
@@ -75,8 +85,7 @@ class Trainer:
                 loss_value.backward()
 
             average_loss_value = statistics.mean(iteration_loss_values)
-            self.__logger.debug(
-                f"Average iteration loss value: {average_loss_value:.5f}"
-            )
+
+            self.__log(f"Average iteration loss value: {average_loss_value:.5f}")
 
             optimizer.step()

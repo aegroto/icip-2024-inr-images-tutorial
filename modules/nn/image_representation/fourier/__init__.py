@@ -1,10 +1,9 @@
-import torch
 from torch import Tensor, Size
 
 from modules.helpers.coordinates import generate_coordinates_grid
 from modules.logging import init_logger
 from modules.nn.image_representation.base import ImplicitImageRepresentation
-from modules.nn.mlp import MultiLayerPerceptron, Siren, MultiLayerPerceptronConfig
+from modules.nn.mlp import MultiLayerPerceptron, MultiLayerPerceptronConfig
 from modules.nn.positional_encoder import PositionalEncoder, PositionalEncoderConfig
 
 LOGGER = init_logger(__name__)

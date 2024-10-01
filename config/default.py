@@ -1,5 +1,3 @@
-import torch
-
 from modules.nn.image_representation.siren import SirenRepresentation
 from modules.nn.positional_encoder import PositionalEncoderConfig
 from modules.nn.siren import SirenConfig
@@ -16,5 +14,5 @@ model = SirenRepresentation(
 )
 
 trainer_configuration = TrainerConfiguration(
-    iterations=100, optimizer_parameters={"lr": 1.0e-2}
+    iterations=1000, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
 )
