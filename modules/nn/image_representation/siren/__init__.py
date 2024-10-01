@@ -1,3 +1,4 @@
+from typing import Callable
 from torch import Tensor, Size
 
 from modules.helpers.coordinates import generate_coordinates_grid
@@ -14,6 +15,7 @@ class SirenRepresentation(ImplicitImageRepresentation):
         self,
         encoder_config: PositionalEncoderConfig,
         network_config: SirenConfig,
+        quantizer_builder: Callable = None
     ):
         super().__init__()
 
@@ -22,7 +24,7 @@ class SirenRepresentation(ImplicitImageRepresentation):
         network_config.input_features = self.encoder.output_features_for(
             network_config.input_features
         )
-        self.network = Siren(network_config)
+        self.network = Siren(network_config, quantizer_builder)
 
     def generate_input(self, output_shape: Size) -> Tensor:
         (height, width) = (output_shape[0], output_shape[1])

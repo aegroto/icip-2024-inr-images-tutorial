@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from typing import Callable
 from torch import Tensor, nn
 
 from modules.logging import init_logger
 from modules.nn.linear import QuantizableLinear
+from modules.nn.quantizer import Quantizer
 from modules.nn.siren.activation import Sine
 from modules.nn.siren.initialization import (
     initialize_first_siren_layer,
@@ -23,23 +25,23 @@ class SirenConfig:
 
 
 class Siren(nn.Module):
-    def __init__(self, config: SirenConfig):
+    def __init__(self, config: SirenConfig, quantizer_builder: Callable = None):
         super().__init__()
 
         layers = list()
 
-        first_layer = QuantizableLinear(config.input_features, config.hidden_features)
+        first_layer = QuantizableLinear(config.input_features, config.hidden_features, quantizer_builder)
         initialize_first_siren_layer(first_layer)
         layers.append(first_layer)
         layers.append(Sine(config.period))
 
         for _ in range(config.hidden_layers):
-            hidden_layer = QuantizableLinear(config.hidden_features, config.hidden_features)
+            hidden_layer = QuantizableLinear(config.hidden_features, config.hidden_features, quantizer_builder)
             initialize_siren_layer(hidden_layer, config.period, config.a)
             layers.append(hidden_layer)
             layers.append(Sine(config.period))
 
-        last_layer = QuantizableLinear(config.hidden_features, config.output_features)
+        last_layer = QuantizableLinear(config.hidden_features, config.output_features, quantizer_builder)
         initialize_siren_layer(last_layer, config.period, config.a)
         layers.append(last_layer)
 
