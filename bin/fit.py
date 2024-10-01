@@ -5,12 +5,7 @@ import torch
 
 from modules.data import load_image_tensor
 from modules.logging import init_logger, setup_logging
-from modules.nn.image_representation.coordinates_based import (
-    CoordinatesBasedRepresentation,
-)
-from modules.nn.mlp import MultiLayerPerceptronConfig
-from modules.nn.positional_encoder import PositionalEncoderConfig
-from modules.training import Trainer, TrainerConfiguration
+from modules.training import Trainer
 
 LOGGER = init_logger(__name__)
 

@@ -6,7 +6,7 @@ import re
 def __env_logging_config():
     try:
         return os.environ["LOG_LEVEL"]
-    except:
+    except KeyError:
         return "__root__=INFO"
 
 

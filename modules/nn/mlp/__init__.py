@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Callable
-import torch
 from torch import Tensor, nn
 
 from modules.logging import init_logger
