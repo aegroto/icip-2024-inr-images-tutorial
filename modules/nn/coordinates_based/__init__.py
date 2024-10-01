@@ -1,24 +1,18 @@
 import torch
-from torch import Tensor, Size, nn
+from torch import Tensor, Size
 
 from modules.logging import init_logger
 from modules.nn.base import ImplicitImageRepresentation
-from modules.training.batch import TrainingBatch
+from modules.nn.mlp import MultiLayerPerceptron, MultiLayerPerceptronConfig
 
 LOGGER = init_logger(__name__)
 
 
 class CoordinatesBasedRepresentation(ImplicitImageRepresentation):
-    def __init__(self):
+    def __init__(self, network_config: MultiLayerPerceptronConfig):
         super().__init__()
 
-        self.network = nn.Sequential(
-            nn.Linear(2, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 3),
-        )
+        self.network = MultiLayerPerceptron(network_config)
 
     def generate_input(self, output_shape: Size) -> Tensor:
         (height, width) = (output_shape[0], output_shape[1])
