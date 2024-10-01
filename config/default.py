@@ -1,20 +1,17 @@
 import torch
 
-from modules.nn.image_representation.coordinates_based import (
-    CoordinatesBasedRepresentation,
-)
-from modules.nn.mlp import MultiLayerPerceptronConfig
+from modules.nn.image_representation.siren import SirenRepresentation
 from modules.nn.positional_encoder import PositionalEncoderConfig
+from modules.nn.siren import SirenConfig
 from modules.training import TrainerConfiguration
 
-model = CoordinatesBasedRepresentation(
+model = SirenRepresentation(
     encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
-    network_config=MultiLayerPerceptronConfig(
+    network_config=SirenConfig(
         input_features=2,
         hidden_features=128,
-        hidden_layers=3,
+        hidden_layers=2,
         output_features=3,
-        activation_builder=lambda: torch.nn.GELU(),
     ),
 )
 
