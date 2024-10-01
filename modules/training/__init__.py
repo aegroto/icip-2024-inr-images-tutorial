@@ -60,7 +60,7 @@ class Trainer:
         batch = self.__generate_batch()
         model = self.__model
 
-        self.__best_loss_value = float('inf')
+        self.__best_loss_value = float("inf")
         self.__best_model = copy.deepcopy(model)
 
         self.__current_iterations = 0

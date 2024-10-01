@@ -31,3 +31,11 @@ def dump_reconstructed_tensor(reconstructed_tensor: torch.Tensor, path: str):
     LOGGER.debug(f"Dumped image shape: {reconstructed_image.shape}")
 
     io.imsave(path, reconstructed_image)
+
+
+def read_image_resolution(path):
+    image_tensor = load_image_tensor(path)
+
+    (height, width) = (image_tensor.shape[1], image_tensor.shape[2])
+
+    return (height, width)

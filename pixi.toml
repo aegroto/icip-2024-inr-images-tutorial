@@ -11,6 +11,8 @@ fit = "python -m bin.fit"
 capabilities = "python -m bin.capabilities"
 infer = "python -m bin.infer"
 export_stats = "python -m bin.export_stats"
+encode = "python -m bin.encode"
+
 format = "ruff format"
 lint = "ruff check"
 

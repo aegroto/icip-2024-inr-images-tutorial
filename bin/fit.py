@@ -1,9 +1,10 @@
-import importlib
+import copy
 import argparse
 from modules.device import load_device
 import torch
 
 from modules.data import load_image_tensor
+from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
 from modules.training import Trainer
 
@@ -20,18 +21,18 @@ def __load_args():
 
 def main():
     setup_logging()
-
-    LOGGER.info("Running")
-
     args = __load_args()
-
     LOGGER.debug(f"Command-line args: {args}")
 
     device = load_device()
-    config = importlib.import_module(f"config.{args.config}")
+    config = load_config(args.config)
 
-    image = load_image_tensor(args.file_path).to(device)
-    model = config.model.to(device)
+    fit(config, args.file_path, device, args.state_dump_path)
+
+
+def fit(config, image_file_path, device, state_dump_path=None):
+    image = load_image_tensor(image_file_path).to(device)
+    model = copy.deepcopy(config.model).to(device)
 
     LOGGER.debug(f"Model architecture: {model}")
 
@@ -45,8 +46,12 @@ def main():
     model, best_loss = trainer.best_result()
     LOGGER.info(f"Best loss value: {best_loss}")
 
-    model.eval()
-    torch.save(model.state_dict(), args.state_dump_path)
+    fitted_state_dict = copy.deepcopy(model.state_dict())
+
+    if state_dump_path:
+        torch.save(fitted_state_dict, state_dump_path)
+
+    return fitted_state_dict
 
 
 if __name__ == "__main__":

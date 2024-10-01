@@ -37,10 +37,25 @@ def main():
     LOGGER.debug(f"Command-line args: {args}")
 
     device = load_device()
+    export_stats(
+        args.original_image_path,
+        args.reconstructed_image_path,
+        args.compressed_file_path,
+        args.stats_dump_path,
+        device,
+    )
 
-    original_image = load_image_tensor(args.original_image_path).to(device)
-    reconstructed_image = load_image_tensor(args.reconstructed_image_path).to(device)
-    compressed_file_size = os.stat(args.compressed_file_path).st_size
+
+def export_stats(
+    original_image_path,
+    reconstructed_image_path,
+    compressed_file_path,
+    stats_dump_path,
+    device,
+):
+    original_image = load_image_tensor(original_image_path).to(device)
+    reconstructed_image = load_image_tensor(reconstructed_image_path).to(device)
+    compressed_file_size = os.stat(compressed_file_path).st_size
 
     num_pixels = original_image.numel() / 3
 
@@ -50,7 +65,7 @@ def main():
 
     LOGGER.info(json.dumps(stats, indent=4))
 
-    json.dump(stats, open(args.stats_dump_path, "w"), indent=4)
+    json.dump(stats, open(stats_dump_path, "w"), indent=4)
 
 
 if __name__ == "__main__":
