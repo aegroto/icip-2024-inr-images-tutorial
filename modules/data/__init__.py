@@ -16,10 +16,17 @@ def load_image_tensor(path):
 
     return image
 
+
 def dump_reconstructed_tensor(reconstructed_tensor: torch.Tensor, path: str):
-    reconstructed_image = reconstructed_tensor \
-        .detach().clamp(0.0, 1.0).mul(255.0).round().to(torch.uint8) \
-        .cpu().numpy()
+    reconstructed_image = (
+        reconstructed_tensor.detach()
+        .clamp(0.0, 1.0)
+        .mul(255.0)
+        .round()
+        .to(torch.uint8)
+        .cpu()
+        .numpy()
+    )
 
     LOGGER.debug(f"Dumped image shape: {reconstructed_image.shape}")
 

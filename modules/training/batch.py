@@ -12,6 +12,7 @@ class TrainingSample:
     def as_tuple(self) -> tuple[Tensor, Tensor]:
         return (self.input, self.target_output)
 
+
 class TrainingBatch:
     def __init__(self):
         self.__samples = list()

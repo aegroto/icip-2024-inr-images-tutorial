@@ -31,14 +31,13 @@ def main():
     image = load_image_tensor(args.file_path).to(device)
     model = CoordinatesBasedRepresentation().to(device)
 
-    trainer = Trainer(TrainerConfiguration(
-        iterations=100
-    ), model, image)
+    trainer = Trainer(TrainerConfiguration(iterations=100), model, image)
 
     trainer.train()
 
     model.eval()
     torch.save(model.state_dict(), args.state_dump_path)
-    
+
+
 if __name__ == "__main__":
     main()

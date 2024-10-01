@@ -18,10 +18,12 @@ def __load_args():
     parser.add_argument("output_dump_path", type=str)
     return parser.parse_args()
 
+
 def __parse_resolution(resolution_str: str) -> tuple[int, int]:
     (width_str, height_str) = tuple(resolution_str.split("x"))
 
     return (int(height_str), int(width_str))
+
 
 def main():
     setup_logging()
