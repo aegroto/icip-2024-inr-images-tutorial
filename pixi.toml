@@ -13,6 +13,7 @@ infer = "python -m bin.infer"
 export_stats = "python -m bin.export_stats"
 encode = "python -m bin.encode"
 pack = "python -m bin.pack"
+unpack = "python -m bin.unpack"
 
 format = "ruff format"
 lint = "ruff check"

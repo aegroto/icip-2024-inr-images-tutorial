@@ -5,9 +5,12 @@ import copy
 import math
 from torch import Tensor, nn
 
+from modules.logging import init_logger
 from modules.nn.quantizer import IQuantizable, Quantizer
 from modules.nn.quantizer.dummy import DummyQuantizer
 from modules.packing import IPackable
+
+LOGGER = init_logger(__name__)
 
 
 class QuantizableLinear(nn.Module, IQuantizable, IPackable):
@@ -48,22 +51,31 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
     def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> bytes:
         data = bytes()
-
-        quantized = quantizer.quantize(tensor)
-        serialized_tensor = (
-            quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
-        )
-
         data += quantizer.pack()
-        data += serialized_tensor
+
+        # quantized = quantizer.quantize(tensor)
+        # serialized_tensor = (
+        #     quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
+        # )
+        # data += serialized_tensor
 
         return data
+
+    def __unpack_tensor(self, tensor: Tensor, quantizer: Quantizer, stream: bytes) -> int:
+        read_bytes = quantizer.unpack(stream)
+
+        return read_bytes
 
     def pack(self) -> bytes:
         data = bytes()
         data += self.__pack_tensor(self.weight, self.weight_quantizer)
         data += self.__pack_tensor(self.bias, self.bias_quantizer)
         return data
+
+    def unpack(self, stream: bytes) -> int:
+        read_bytes = self.__unpack_tensor(self.weight, self.weight_quantizer, stream)
+        read_bytes += self.__unpack_tensor(self.bias, self.bias_quantizer, stream[read_bytes:])
+        return read_bytes
 
     def forward(self, x: Tensor) -> Tensor:
         (quantized_weight, quantized_bias) = self.__get_quantized_params()

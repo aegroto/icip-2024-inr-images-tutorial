@@ -16,10 +16,20 @@ class UniformQuantizer(Quantizer, IPackable):
         self.zero = 0.0
 
     def pack(self) -> bytes:
+        LOGGER.debug(f"Packing quantization values::  bits: {self.bits} bound: {self.bound}")
+
         data = bytes()
         data += struct.pack("!h", self.bits)
         data += struct.pack("!f", self.bound)
         return data
+
+    def unpack(self, stream: bytes) -> int:
+        self.bits = struct.unpack("!h", stream[0:2])
+        self.bound = struct.unpack("!f", stream[2:6])
+
+        LOGGER.debug(f"Unpacked quantization values::  bits: {self.bits} bound: {self.bound}")
+
+        return 6
 
     def calibrate(self, x: Tensor):
         self.bound = x.abs().max().item()

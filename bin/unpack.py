@@ -6,15 +6,15 @@ import torch
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
 from modules.nn.quantizer import inject_quantizer
-from modules.packing import pack_model
+from modules.packing import pack_model, unpack_model
 
 LOGGER = init_logger(__name__)
 
 
 def __load_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("state_path", type=str)
-    parser.add_argument("output_path", type=str)
+    parser.add_argument("packed_path", type=str)
+    parser.add_argument("state_dump_path", type=str)
     parser.add_argument("--config", type=str, required=False, default="default")
     return parser.parse_args()
 
@@ -27,25 +27,19 @@ def main():
     device = load_device()
     config = load_config(args.config)
 
-    state_dict = torch.load(args.state_path, weights_only=True)
+    packed_stream = open(args.packed_path, "rb").read()
 
-    pack(config, state_dict, args.output_path, device)
+    unpack(config, packed_stream, args.state_dump_path, device)
 
 
-def pack(config, state_dict, output_path, device):
+def unpack(config, packed_stream, output_path, device):
     model = copy.deepcopy(config.model).to(device)
 
     model.apply(lambda module: inject_quantizer(module, config.quantizer_builder))
-    model.load_state_dict(state_dict)
 
     LOGGER.debug(f"Model architecture: {model}")
 
-    stream = pack_model(model)
-
-    LOGGER.debug(f"Packed model stream length: {len(stream)}")
-
-    with open(output_path, "wb") as file:
-        file.write(stream)
+    unpack_model(model, packed_stream)
 
 if __name__ == "__main__":
     main()
