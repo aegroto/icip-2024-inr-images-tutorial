@@ -58,11 +58,9 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
     model, best_loss = trainer.best_result()
     LOGGER.info(f"Best loss value: {best_loss}")
 
-    # model.apply(apply_quantization)
+    model.apply(apply_quantization)
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
-
-    model.apply(__print_bound)
 
     for (key, value) in fitted_state_dict.items():
         if "bound" in key:
@@ -73,10 +71,6 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
         torch.save(fitted_state_dict, state_dump_path)
 
     return fitted_state_dict
-
-def __print_bound(module):
-    if isinstance(module, UniformQuantizer): 
-        LOGGER.debug(module.bound)
 
 if __name__ == "__main__":
     main()
