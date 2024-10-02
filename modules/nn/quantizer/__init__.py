@@ -20,9 +20,9 @@ class Quantizer(nn.Module):
 
     def forward(self, unquantized: Tensor) -> Tensor:
         dequantized = self.dequantize(self.quantize(unquantized))
-        error = unquantized - dequantized
+        error = dequantized - unquantized
 
-        estimated_quantized = unquantized + error
+        estimated_quantized = unquantized + error.detach()
 
         return estimated_quantized
 

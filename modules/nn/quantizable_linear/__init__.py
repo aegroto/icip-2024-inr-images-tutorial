@@ -31,11 +31,11 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         bound = 1.0 / math.sqrt(fan_in) if fan_in > 0 else 0
         nn.init.uniform_(self.bias, -bound, bound)
 
-    def __get_quantized_params(self):
-        quantized_weight = self.weight_quantizer(self.weight)
-        quantized_bias = self.weight_quantizer(self.bias)
+    def __get_estimated_quantized_params(self):
+        equantized_weight = self.weight_quantizer(self.weight)
+        equantized_bias = self.weight_quantizer(self.bias)
 
-        return (quantized_weight, quantized_bias)
+        return (equantized_weight, equantized_bias)
 
     def init_quantizers(self, quantizer_builder: Callable):
         self.weight_quantizer = quantizer_builder(self)
@@ -46,10 +46,10 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         self.bias_quantizer.calibrate(self.bias)
 
     def apply_quantization(self):
-        (quantized_weight, quantized_bias) = self.__get_quantized_params()
+        (equantized_weight, equantized_bias) = self.__get_estimated_quantized_params()
 
-        self.weight.set_(quantized_weight)
-        self.bias.set_(quantized_bias)
+        self.weight.set_(equantized_weight)
+        self.bias.set_(equantized_bias)
 
     def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> bytes:
         data = bytes()
@@ -108,6 +108,6 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         return read_bytes
 
     def forward(self, x: Tensor) -> Tensor:
-        (quantized_weight, quantized_bias) = self.__get_quantized_params()
+        (equantized_weight, equantized_bias) = self.__get_estimated_quantized_params()
 
-        return nn.functional.linear(x, quantized_weight, quantized_bias)
+        return nn.functional.linear(x, equantized_weight, equantized_bias)
