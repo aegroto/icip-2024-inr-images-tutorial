@@ -50,10 +50,13 @@ def apply_quantization(module: nn.Module):
         if isinstance(module, IQuantizable):
             module.apply_quantization()
 
-def recalibrate_quantizers(module: ImplicitImageRepresentation):
-    with torch.no_grad():
-        if isinstance(module, IQuantizable):
-            module.recalibrate_quantizers()
+def recalibrate_quantizers(model: ImplicitImageRepresentation):
+    def __callback(module: nn.Module):
+        with torch.no_grad():
+            if isinstance(module, IQuantizable):
+                module.recalibrate_quantizers()
+
+    model.apply(__callback)
 
 def initialize_quantizers(model: ImplicitImageRepresentation, quantizer_builder: Callable):
     if quantizer_builder is None:

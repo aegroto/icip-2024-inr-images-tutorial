@@ -10,7 +10,7 @@ model = SirenRepresentation(
     network_config=SirenConfig(
         input_features=2,
         hidden_features=256,
-        hidden_layers=3,
+        hidden_layers=1,
         output_features=3,
     ),
 )

@@ -5,7 +5,7 @@ import torch
 
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import inject_quantizer
+from modules.nn.quantizer import initialize_quantizers, inject_quantizer
 from modules.packing import pack_model
 
 LOGGER = init_logger(__name__)
@@ -33,10 +33,16 @@ def main():
 
 
 def pack(config, state_dict, output_path, device):
-    model = copy.deepcopy(config.model).to(device)
+    for (key, value) in state_dict.items():
+        if "bound" in key:
+            LOGGER.debug(key)
+            LOGGER.debug(value)
 
-    model.apply(lambda module: inject_quantizer(module, config.quantizer_builder))
+    model = copy.deepcopy(config.model)
+    initialize_quantizers(model, config.quantizer_builder)
     model.load_state_dict(state_dict)
+    model.to(device)
+
 
     LOGGER.debug(f"Model architecture: {model}")
 

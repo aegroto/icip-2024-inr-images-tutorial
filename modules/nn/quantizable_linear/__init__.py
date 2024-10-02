@@ -88,6 +88,7 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         quantized_tensor = torch.from_numpy(array).to(torch.float32).to(tensor.device).reshape(tensor.shape)
         LOGGER.debug(f"Unpacked quantized tensor mean: {quantized_tensor.mean()}")
 
+        quantizer.to(tensor.device)
         dequantized_tensor = quantizer.dequantize(quantized_tensor)
         tensor.set_(dequantized_tensor)
 

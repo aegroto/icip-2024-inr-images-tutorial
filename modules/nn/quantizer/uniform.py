@@ -1,4 +1,5 @@
 import struct
+import torch
 from torch import Tensor
 
 from modules.logging import init_logger
@@ -12,7 +13,7 @@ class UniformQuantizer(Quantizer, IPackable):
     def __init__(self, bits):
         super().__init__()
 
-        self.register_buffer("bits", Tensor([bits]), persistent=True)
+        self.register_buffer("bits", Tensor([bits]).to(torch.int32), persistent=True)
         self.register_buffer("zero", Tensor([0.0]), persistent=True)
         self.register_buffer("bound", Tensor([1.0]), persistent=True)
 
@@ -41,8 +42,10 @@ class UniformQuantizer(Quantizer, IPackable):
         self.bits = self.bits.to(x.device)
         self.zero = self.zero.to(x.device)
 
+        LOGGER.debug(f"New calibrated bound: {self.bound}")
+
     def _max_symbol(self) -> int:
-        return 2 ** (self.bits - 1)
+        return 2 ** (self.bits.to(torch.float32) - 1)
 
     def quantize(self, x: Tensor) -> Tensor:
         y = x.sub(self.zero)
