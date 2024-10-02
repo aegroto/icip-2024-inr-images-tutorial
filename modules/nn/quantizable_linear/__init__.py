@@ -1,3 +1,5 @@
+import struct
+import numpy
 import torch
 import copy
 import math
@@ -5,9 +7,10 @@ from torch import Tensor, nn
 
 from modules.nn.quantizer import IQuantizable, Quantizer
 from modules.nn.quantizer.dummy import DummyQuantizer
+from modules.packing import IPackable
 
 
-class QuantizableLinear(nn.Module, IQuantizable):
+class QuantizableLinear(nn.Module, IQuantizable, IPackable):
     def __init__(self, in_features: int, out_features: int):
         super().__init__()
         self.in_features = in_features
@@ -42,6 +45,25 @@ class QuantizableLinear(nn.Module, IQuantizable):
 
         self.weight.set_(quantized_weight)
         self.bias.set_(quantized_bias)
+
+    def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> bytes:
+        data = bytes()
+
+        quantized = quantizer.quantize(tensor)
+        serialized_tensor = (
+            quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
+        )
+
+        data += quantizer.pack()
+        data += serialized_tensor
+
+        return data
+
+    def pack(self) -> bytes:
+        data = bytes()
+        data += self.__pack_tensor(self.weight, self.weight_quantizer)
+        data += self.__pack_tensor(self.bias, self.bias_quantizer)
+        return data
 
     def forward(self, x: Tensor) -> Tensor:
         (quantized_weight, quantized_bias) = self.__get_quantized_params()

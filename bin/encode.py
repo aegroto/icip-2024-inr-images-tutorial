@@ -18,7 +18,9 @@ def __load_args():
     parser.add_argument("uncompressed_image_path", type=str)
     parser.add_argument("results_folder", type=str)
     parser.add_argument("--config", type=str, required=False, default="default")
-    parser.add_argument("--initial_state_dict_path", type=str, required=False, default=None)
+    parser.add_argument(
+        "--initial_state_dict_path", type=str, required=False, default=None
+    )
     return parser.parse_args()
 
 
@@ -70,8 +72,8 @@ def main():
         current_state_dict = torch.load(args.initial_state_dict_path)
     else:
         current_state_dict = None
-    
-    for (phase_name, phase_config) in config.phases.items():
+
+    for phase_name, phase_config in config.phases.items():
         current_state_dict = __run_phase(
             phase_config, args, phase_name, device, current_state_dict
         )

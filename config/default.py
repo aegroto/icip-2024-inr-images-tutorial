@@ -15,6 +15,8 @@ model = SirenRepresentation(
     ),
 )
 
+quantizer_builder = lambda _: UniformQuantizer(8)
+
 phases = {
     "fitting": Configuration(
         model=model,
@@ -27,6 +29,6 @@ phases = {
         trainer_configuration=TrainerConfiguration(
             iterations=500, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
         ),
-        quantizer_builder=lambda _: UniformQuantizer(8),
+        quantizer_builder=quantizer_builder,
     ),
 }

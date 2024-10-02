@@ -40,9 +40,8 @@ def inject_quantizer(module: nn.Module, quantizer_builder: Callable):
     if isinstance(module, IQuantizable):
         module.set_quantizer(quantizer_builder(module))
 
-def apply_quantization(module: nn.Module):
-    LOGGER.debug(f"Injecting quantizer in module {module}")
 
+def apply_quantization(module: nn.Module):
     with torch.no_grad():
         if isinstance(module, IQuantizable):
             module.apply_quantization()
