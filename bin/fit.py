@@ -6,7 +6,7 @@ import torch
 from modules.data import load_image_tensor
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import apply_quantization, inject_quantizer
+from modules.nn.quantizer import apply_quantization, initialize_quantizers, inject_quantizer, recalibrate_quantizers
 from modules.training import Trainer
 
 LOGGER = init_logger(__name__)
@@ -33,14 +33,16 @@ def main():
 
 def fit(config, image_file_path, device, state_dump_path=None, initial_state_dict=None):
     image = load_image_tensor(image_file_path).to(device)
-    model = copy.deepcopy(config.model).to(device)
+    model = copy.deepcopy(config.model)
 
     if initial_state_dict is not None:
         model.load_state_dict(initial_state_dict)
 
-    quantization_enabled = config.quantizer_builder is not None
-    if quantization_enabled:
-        model.apply(lambda module: inject_quantizer(module, config.quantizer_builder))
+    initialize_quantizers(model, config.quantizer_builder)
+    model.to(device)
+
+    if config.recalibrate_quantizers:
+        recalibrate_quantizers(model)
 
     LOGGER.debug(f"Model architecture: {model}")
 
@@ -54,8 +56,7 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
     model, best_loss = trainer.best_result()
     LOGGER.info(f"Best loss value: {best_loss}")
 
-    if quantization_enabled:
-        model.apply(apply_quantization)
+    # model.apply(apply_quantization)
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
 

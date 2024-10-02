@@ -1,4 +1,5 @@
 import struct
+from typing import Callable
 import numpy
 import torch
 import copy
@@ -36,10 +37,11 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
         return (quantized_weight, quantized_bias)
 
-    def set_quantizer(self, quantizer: Quantizer):
-        self.weight_quantizer = copy.deepcopy(quantizer)
-        self.bias_quantizer = copy.deepcopy(quantizer)
+    def init_quantizers(self, quantizer_builder: Callable):
+        self.weight_quantizer = quantizer_builder(self)
+        self.bias_quantizer = quantizer_builder(self)
 
+    def recalibrate_quantizers(self):
         self.weight_quantizer.calibrate(self.weight)
         self.bias_quantizer.calibrate(self.bias)
 
@@ -53,16 +55,43 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         data = bytes()
         data += quantizer.pack()
 
-        # quantized = quantizer.quantize(tensor)
-        # serialized_tensor = (
-        #     quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
-        # )
-        # data += serialized_tensor
+        LOGGER.debug(f"Tensor to be packed mean: {tensor.mean()}")
+
+        quantized = quantizer.quantize(tensor)
+
+        LOGGER.debug(f"Quantized tensor to be packed mean: {quantized.mean()}")
+
+        dequantized_test = quantizer.dequantize(quantized)
+        LOGGER.debug(f"Dequantized test tensor mean: {dequantized_test.mean()}")
+
+        serialized_tensor = (
+            quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
+        )
+        data += struct.pack("!I", len(serialized_tensor))
+        data += serialized_tensor
+
+        LOGGER.debug(f"Serialized tensor length: {len(serialized_tensor)}")
 
         return data
 
     def __unpack_tensor(self, tensor: Tensor, quantizer: Quantizer, stream: bytes) -> int:
         read_bytes = quantizer.unpack(stream)
+
+        serialized_tensor_len = struct.unpack("!I", stream[read_bytes:read_bytes+4])[0]
+        read_bytes += 4
+        serialized_tensor_bytes = stream[read_bytes:read_bytes+serialized_tensor_len]
+        read_bytes += serialized_tensor_len
+        array = numpy.frombuffer(serialized_tensor_bytes, numpy.int8).copy()
+
+        LOGGER.debug(f"Unpacked array size: {len(array)}")
+
+        quantized_tensor = torch.from_numpy(array).to(torch.float32).to(tensor.device).reshape(tensor.shape)
+        LOGGER.debug(f"Unpacked quantized tensor mean: {quantized_tensor.mean()}")
+
+        dequantized_tensor = quantizer.dequantize(quantized_tensor)
+        tensor.set_(dequantized_tensor)
+
+        LOGGER.debug(f"Unpacked tensor mean: {tensor.mean()}")
 
         return read_bytes
 

@@ -69,7 +69,7 @@ def main():
     device = load_device()
 
     if args.initial_state_dict_path is not None:
-        current_state_dict = torch.load(args.initial_state_dict_path)
+        current_state_dict = torch.load(args.initial_state_dict_path, weights_only=True)
     else:
         current_state_dict = None
 

@@ -39,7 +39,9 @@ def unpack(config, packed_stream, output_path, device):
 
     LOGGER.debug(f"Model architecture: {model}")
 
-    unpack_model(model, packed_stream)
+    with torch.no_grad():
+        unpack_model(model, packed_stream)
+        torch.save(model.state_dict(), output_path)
 
 if __name__ == "__main__":
     main()
