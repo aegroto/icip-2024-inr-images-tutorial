@@ -7,6 +7,9 @@ LOGGER = init_logger(__name__)
 
 
 class Quantizer(nn.Module):
+    def calibrate(self, x: Tensor):
+        raise NotImplementedError
+
     def quantize(self, x: Tensor) -> Tensor:
         raise NotImplementedError
 

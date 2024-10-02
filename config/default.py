@@ -18,14 +18,14 @@ model = SirenRepresentation(
 fitting = Configuration(
     model=model,
     trainer_configuration=TrainerConfiguration(
-        iterations=100, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+        iterations=1000, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
     ),
 )
 
 quantization = Configuration(
     model=model,
     trainer_configuration=TrainerConfiguration(
-        iterations=25, optimizer_parameters={"lr": 1.0e-4}, log_interval=5
+        iterations=100, optimizer_parameters={"lr": 1.0e-4}, log_interval=5
     ),
     quantizer_builder=lambda _: UniformQuantizer(8)
 )

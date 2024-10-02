@@ -1,4 +1,5 @@
 import torch
+import copy
 import math
 from torch import Tensor, nn
 
@@ -12,7 +13,8 @@ class QuantizableLinear(nn.Module, IQuantizable):
         self.in_features = in_features
         self.out_features = out_features
 
-        self.quantizer = DummyQuantizer()
+        self.weight_quantizer = DummyQuantizer()
+        self.bias_quantizer = DummyQuantizer()
 
         self.weight = nn.Parameter(torch.empty((out_features, in_features)))
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
@@ -23,10 +25,14 @@ class QuantizableLinear(nn.Module, IQuantizable):
         nn.init.uniform_(self.bias, -bound, bound)
 
     def set_quantizer(self, quantizer: Quantizer):
-        self.quantizer = quantizer
+        self.weight_quantizer = copy.deepcopy(quantizer)
+        self.bias_quantizer = copy.deepcopy(quantizer)
+
+        self.weight_quantizer.calibrate(self.weight)
+        self.bias_quantizer.calibrate(self.bias)
 
     def forward(self, x: Tensor) -> Tensor:
-        quantized_weight = self.quantizer(self.weight)
-        quantized_bias = self.quantizer(self.bias)
+        quantized_weight = self.weight_quantizer(self.weight)
+        quantized_bias = self.weight_quantizer(self.bias)
 
         return nn.functional.linear(x, quantized_weight, quantized_bias)
