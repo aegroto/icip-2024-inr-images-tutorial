@@ -1,4 +1,5 @@
 import argparse
+import torch
 import os
 from bin.export_stats import export_stats
 from bin.fit import fit
@@ -17,6 +18,7 @@ def __load_args():
     parser.add_argument("uncompressed_image_path", type=str)
     parser.add_argument("results_folder", type=str)
     parser.add_argument("--config", type=str, required=False, default="default")
+    parser.add_argument("--initial_state_dict_path", type=str, required=False, default=None)
     return parser.parse_args()
 
 
@@ -64,10 +66,15 @@ def main():
     config = load_config(args.config)
     device = load_device()
 
-    fitted_state_dict = __run_phase(config.fitting, args, "fitting", device)
-    _ = __run_phase(
-        config.quantization, args, "quantization", device, fitted_state_dict
-    )
+    if args.initial_state_dict_path is not None:
+        current_state_dict = torch.load(args.initial_state_dict_path)
+    else:
+        current_state_dict = None
+    
+    for (phase_name, phase_config) in config.phases.items():
+        current_state_dict = __run_phase(
+            phase_config, args, phase_name, device, current_state_dict
+        )
 
 
 if __name__ == "__main__":

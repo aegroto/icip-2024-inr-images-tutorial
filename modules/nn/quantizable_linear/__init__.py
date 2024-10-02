@@ -24,6 +24,12 @@ class QuantizableLinear(nn.Module, IQuantizable):
         bound = 1.0 / math.sqrt(fan_in) if fan_in > 0 else 0
         nn.init.uniform_(self.bias, -bound, bound)
 
+    def __get_quantized_params(self):
+        quantized_weight = self.weight_quantizer(self.weight)
+        quantized_bias = self.weight_quantizer(self.bias)
+
+        return (quantized_weight, quantized_bias)
+
     def set_quantizer(self, quantizer: Quantizer):
         self.weight_quantizer = copy.deepcopy(quantizer)
         self.bias_quantizer = copy.deepcopy(quantizer)
@@ -31,8 +37,13 @@ class QuantizableLinear(nn.Module, IQuantizable):
         self.weight_quantizer.calibrate(self.weight)
         self.bias_quantizer.calibrate(self.bias)
 
+    def apply_quantization(self):
+        (quantized_weight, quantized_bias) = self.__get_quantized_params()
+
+        self.weight.set_(quantized_weight)
+        self.bias.set_(quantized_bias)
+
     def forward(self, x: Tensor) -> Tensor:
-        quantized_weight = self.weight_quantizer(self.weight)
-        quantized_bias = self.weight_quantizer(self.bias)
+        (quantized_weight, quantized_bias) = self.__get_quantized_params()
 
         return nn.functional.linear(x, quantized_weight, quantized_bias)

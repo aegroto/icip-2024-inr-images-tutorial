@@ -17,7 +17,7 @@ class UniformQuantizer(Quantizer):
         self.bound = x.abs().max().item()
 
     def _max_symbol(self) -> int:
-        return 2 ** self.bits
+        return 2**self.bits
 
     def quantize(self, x: Tensor) -> Tensor:
         y = x.sub(self.zero)
