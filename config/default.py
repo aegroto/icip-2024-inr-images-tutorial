@@ -23,11 +23,11 @@ def quantizer_builder(_):
 
 
 def optimizer_builder(parameters):
-    return torch.optim.Adam(parameters, lr=1.0e-4)
+    return torch.optim.Adam(parameters, lr=1.0e-3)
 
 
-def scheduler_builder():
-    return
+def scheduler_builder(optimizer):
+    return torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 50, 1.0e-4)
 
 
 def loss_fn_builder():

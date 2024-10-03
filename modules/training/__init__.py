@@ -1,11 +1,10 @@
 from typing import Callable
-import torch
 import copy
 import statistics
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from torch import nn, Tensor
+from torch import Tensor
 from modules.device import load_device
 from modules.logging import init_logger
 from modules.nn.image_representation.base import ImplicitImageRepresentation
@@ -69,14 +68,18 @@ class Trainer:
         self.__current_iterations = 0
 
         optimizer = self.__config.optimizer_builder(model.parameters())
+        scheduler = self.__config.scheduler_builder(optimizer)
         loss_fn = self.__config.loss_fn_builder()
 
-        self.__logger.debug(f"Training with optimizer: {optimizer}")
-        self.__logger.debug(f"Training with loss function: {loss_fn}")
+        self.__logger.debug(
+            f"Training setup: \nOptimizer: {optimizer}\n Scheduler: {scheduler}\n Loss function {loss_fn}"
+        )
 
         for iteration in range(1, self.__config.iterations + 1):
             self.__current_iterations += 1
-            self.__log(f"Iteration #{iteration}/{self.__config.iterations}")
+            self.__log(
+                f"Iteration #{iteration}/{self.__config.iterations}:: Learning rate: {scheduler.get_last_lr()}"
+            )
 
             loss_norm = 1.0 / batch.size()
 
@@ -93,6 +96,8 @@ class Trainer:
 
                 loss_value *= loss_norm
                 loss_value.backward()
+
+            scheduler.step()
 
             average_loss_value = statistics.mean(iteration_loss_values)
 
