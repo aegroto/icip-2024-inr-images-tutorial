@@ -3,7 +3,6 @@ import torch
 
 from modules.logging import init_logger
 from modules.nn.image_representation.base import ImplicitImageRepresentation
-from modules.nn.quantizer import IQuantizable
 
 LOGGER = init_logger(__name__)
 
@@ -41,6 +40,7 @@ def pack_model(model: ImplicitImageRepresentation) -> bytes:
 
     return stream
 
+
 def unpack_model(model: ImplicitImageRepresentation, stream: bytes):
     LOGGER.debug(f"Unpacking model from stream of size {len(stream)}")
 
@@ -54,4 +54,3 @@ def unpack_model(model: ImplicitImageRepresentation, stream: bytes):
         LOGGER.debug(f"Remaining stream size: {len(stream)}")
 
     return stream
-

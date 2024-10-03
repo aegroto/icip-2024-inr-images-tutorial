@@ -5,7 +5,7 @@ import torch
 
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import initialize_quantizers, inject_quantizer
+from modules.nn.quantizer import initialize_quantizers
 from modules.packing import pack_model
 
 LOGGER = init_logger(__name__)
@@ -33,7 +33,7 @@ def main():
 
 
 def pack(config, state_dict, output_path, device):
-    for (key, value) in state_dict.items():
+    for key, value in state_dict.items():
         if "bound" in key:
             LOGGER.debug(key)
             LOGGER.debug(value)
@@ -43,7 +43,6 @@ def pack(config, state_dict, output_path, device):
     model.load_state_dict(state_dict)
     model.to(device)
 
-
     LOGGER.debug(f"Model architecture: {model}")
 
     stream = pack_model(model)
@@ -52,6 +51,7 @@ def pack(config, state_dict, output_path, device):
 
     with open(output_path, "wb") as file:
         file.write(stream)
+
 
 if __name__ == "__main__":
     main()

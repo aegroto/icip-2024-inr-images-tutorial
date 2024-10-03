@@ -5,8 +5,8 @@ import torch
 
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import initialize_quantizers, inject_quantizer
-from modules.packing import pack_model, unpack_model
+from modules.nn.quantizer import initialize_quantizers
+from modules.packing import unpack_model
 
 LOGGER = init_logger(__name__)
 
@@ -42,6 +42,7 @@ def unpack(config, packed_stream, output_path, device):
     with torch.no_grad():
         unpack_model(model, packed_stream)
         torch.save(model.state_dict(), output_path)
+
 
 if __name__ == "__main__":
     main()

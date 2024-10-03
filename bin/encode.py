@@ -8,7 +8,6 @@ from modules.data import read_image_resolution
 from modules.device import load_device
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import inject_quantizer
 
 LOGGER = init_logger(__name__)
 

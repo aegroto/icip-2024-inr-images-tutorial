@@ -6,8 +6,11 @@ import torch
 from modules.data import load_image_tensor
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
-from modules.nn.quantizer import apply_quantization, initialize_quantizers, inject_quantizer, recalibrate_quantizers
-from modules.nn.quantizer.uniform import UniformQuantizer
+from modules.nn.quantizer import (
+    apply_quantization,
+    initialize_quantizers,
+    recalibrate_quantizers,
+)
 from modules.training import Trainer
 
 LOGGER = init_logger(__name__)
@@ -62,7 +65,7 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
 
-    for (key, value) in fitted_state_dict.items():
+    for key, value in fitted_state_dict.items():
         if "bound" in key:
             LOGGER.debug(key)
             LOGGER.debug(value)
@@ -71,6 +74,7 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
         torch.save(fitted_state_dict, state_dump_path)
 
     return fitted_state_dict
+
 
 if __name__ == "__main__":
     main()

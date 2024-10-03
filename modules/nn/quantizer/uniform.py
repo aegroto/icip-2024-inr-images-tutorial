@@ -18,7 +18,9 @@ class UniformQuantizer(Quantizer, IPackable):
         self.register_buffer("bound", Tensor([1.0]), persistent=True)
 
     def pack(self) -> bytes:
-        LOGGER.debug(f"Packing quantization values::  bits: {self.bits} bound: {self.bound}")
+        LOGGER.debug(
+            f"Packing quantization values::  bits: {self.bits} bound: {self.bound}"
+        )
 
         data = bytes()
         data += struct.pack("!h", self.bits.item())
@@ -32,7 +34,9 @@ class UniformQuantizer(Quantizer, IPackable):
         self.bits = Tensor([bits])
         self.bound = Tensor([bound])
 
-        LOGGER.debug(f"Unpacked quantization values::  bits: {self.bits} bound: {self.bound}")
+        LOGGER.debug(
+            f"Unpacked quantization values::  bits: {self.bits} bound: {self.bound}"
+        )
 
         return 6
 

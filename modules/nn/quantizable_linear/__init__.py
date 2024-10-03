@@ -2,7 +2,6 @@ import struct
 from typing import Callable
 import numpy
 import torch
-import copy
 import math
 from torch import Tensor, nn
 
@@ -91,18 +90,29 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
         return data
 
-    def __unpack_tensor(self, tensor: Tensor, quantizer: Quantizer, stream: bytes) -> int:
+    def __unpack_tensor(
+        self, tensor: Tensor, quantizer: Quantizer, stream: bytes
+    ) -> int:
         read_bytes = quantizer.unpack(stream)
 
-        serialized_tensor_len = struct.unpack("!I", stream[read_bytes:read_bytes+4])[0]
+        serialized_tensor_len = struct.unpack(
+            "!I", stream[read_bytes : read_bytes + 4]
+        )[0]
         read_bytes += 4
-        serialized_tensor_bytes = stream[read_bytes:read_bytes+serialized_tensor_len]
+        serialized_tensor_bytes = stream[
+            read_bytes : read_bytes + serialized_tensor_len
+        ]
         read_bytes += serialized_tensor_len
         array = numpy.frombuffer(serialized_tensor_bytes, numpy.int8).copy()
 
         LOGGER.debug(f"Unpacked array size: {len(array)}")
 
-        quantized_tensor = torch.from_numpy(array).to(torch.float32).to(tensor.device).reshape(tensor.shape)
+        quantized_tensor = (
+            torch.from_numpy(array)
+            .to(torch.float32)
+            .to(tensor.device)
+            .reshape(tensor.shape)
+        )
         LOGGER.debug(f"Unpacked quantized tensor mean: {quantized_tensor.mean()}")
 
         quantizer.to(tensor.device)
@@ -121,7 +131,9 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
     def unpack(self, stream: bytes) -> int:
         read_bytes = self.__unpack_tensor(self.weight, self.weight_quantizer, stream)
-        read_bytes += self.__unpack_tensor(self.bias, self.bias_quantizer, stream[read_bytes:])
+        read_bytes += self.__unpack_tensor(
+            self.bias, self.bias_quantizer, stream[read_bytes:]
+        )
         return read_bytes
 
     def forward(self, x: Tensor) -> Tensor:
