@@ -37,7 +37,7 @@ def main():
 
 def fit(config, image_file_path, device, state_dump_path=None, initial_state_dict=None):
     image = load_image_tensor(image_file_path).to(device)
-    model = copy.deepcopy(config.model)
+    model = config.model_builder()
 
     if initial_state_dict is not None:
         model.load_state_dict(initial_state_dict)

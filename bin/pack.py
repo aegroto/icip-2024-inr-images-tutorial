@@ -38,7 +38,7 @@ def pack(config, state_dict, output_path, device):
             LOGGER.debug(key)
             LOGGER.debug(value)
 
-    model = copy.deepcopy(config.model)
+    model = config.model_builder()
     initialize_quantizers(model, config.quantizer_builder)
     model.load_state_dict(state_dict)
     model.to(device)

@@ -42,7 +42,7 @@ def main():
 
 
 def infer(config, state_dict, resolution, dump_path, device):
-    model = copy.deepcopy(config.model)
+    model = config.model_builder()
     initialize_quantizers(model, config.quantizer_builder)
     model.load_state_dict(state_dict)
     model.eval()

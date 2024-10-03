@@ -33,7 +33,7 @@ def main():
 
 
 def unpack(config, packed_stream, output_path, device):
-    model = copy.deepcopy(config.model)
+    model = config.model_builder()
     initialize_quantizers(model, config.quantizer_builder)
     model.to(device)
 

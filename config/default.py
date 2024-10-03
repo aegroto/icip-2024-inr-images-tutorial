@@ -7,15 +7,16 @@ from modules.nn.quantizer.uniform import UniformQuantizer
 from modules.nn.siren import SirenConfig
 from modules.training import TrainerConfiguration
 
-model = SirenRepresentation(
-    encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
-    network_config=SirenConfig(
-        input_features=2,
-        hidden_features=256,
-        hidden_layers=1,
-        output_features=3,
-    ),
-)
+def model_builder():
+    return SirenRepresentation(
+        encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
+        network_config=SirenConfig(
+            input_features=2,
+            hidden_features=256,
+            hidden_layers=1,
+            output_features=3,
+        ),
+    )
 
 
 def quantizer_builder(_):
@@ -36,7 +37,7 @@ def loss_fn_builder():
 
 phases = {
     "fitting": Configuration(
-        model=model,
+        model_builder=model_builder,
         trainer_configuration=TrainerConfiguration(
             optimizer_builder=optimizer_builder,
             scheduler_builder=scheduler_builder,
@@ -46,7 +47,7 @@ phases = {
         ),
     ),
     "quantization": Configuration(
-        model=model,
+        model_builder=model_builder,
         trainer_configuration=TrainerConfiguration(
             optimizer_builder=optimizer_builder,
             scheduler_builder=scheduler_builder,
