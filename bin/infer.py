@@ -48,6 +48,8 @@ def infer(config, state_dict, resolution, dump_path, device):
     model.eval()
     model.to(device)
 
+    LOGGER.debug(f"Model architecture: {model}")
+
     (target_height, target_width) = resolution
     target_shape = torch.Size([target_height, target_width])
     input = model.generate_input(target_shape).to(device)

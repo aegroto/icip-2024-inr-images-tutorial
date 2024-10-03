@@ -58,7 +58,7 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
     model, best_loss = trainer.best_result()
     LOGGER.info(f"Best loss value: {best_loss}")
 
-    # model.apply(apply_quantization)
+    model.apply(apply_quantization)
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
 

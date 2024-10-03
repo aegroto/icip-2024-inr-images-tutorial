@@ -33,7 +33,24 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
     def __get_estimated_quantized_params(self):
         equantized_weight = self.weight_quantizer(self.weight)
-        equantized_bias = self.weight_quantizer(self.bias)
+        equantized_bias = self.bias_quantizer(self.bias)
+
+        with torch.no_grad():
+            LOGGER.debug(f"Unquantized weight mean: {self.weight.mean()}")
+            test_param = equantized_weight
+            LOGGER.debug(f"Estimated quantized weight mean: {test_param.mean()}")
+            test_param = self.weight_quantizer(test_param)
+            LOGGER.debug(f"2nd Estimated quantized weight mean: {test_param.mean()}")
+            test_param = self.weight_quantizer(test_param)
+            LOGGER.debug(f"3rd Estimated quantized weight mean: {test_param.mean()}")
+
+            LOGGER.debug(f"Unquantized bias mean: {self.bias.mean()}")
+            test_param = equantized_bias
+            LOGGER.debug(f"Estimated quantized bias mean: {test_param.mean()}")
+            test_param = self.bias_quantizer(test_param)
+            LOGGER.debug(f"2nd Estimated quantized bias mean: {test_param.mean()}")
+            test_param = self.bias_quantizer(test_param)
+            LOGGER.debug(f"3rd Estimated quantized bias mean: {test_param.mean()}")
 
         return (equantized_weight, equantized_bias)
 
