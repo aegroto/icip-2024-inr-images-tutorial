@@ -1,3 +1,5 @@
+import torch
+
 from config import Configuration
 from modules.nn.image_representation.siren import SirenRepresentation
 from modules.nn.positional_encoder import PositionalEncoderConfig
@@ -20,17 +22,37 @@ def quantizer_builder(_):
     return UniformQuantizer(8)
 
 
+def optimizer_builder(parameters):
+    return torch.optim.Adam(parameters, lr=1.0e-4)
+
+
+def scheduler_builder():
+    return
+
+
+def loss_fn_builder():
+    return torch.nn.MSELoss()
+
+
 phases = {
     "fitting": Configuration(
         model=model,
         trainer_configuration=TrainerConfiguration(
-            iterations=1000, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+            optimizer_builder=optimizer_builder,
+            scheduler_builder=scheduler_builder,
+            loss_fn_builder=loss_fn_builder,
+            iterations=1000,
+            log_interval=10,
         ),
     ),
     "quantization": Configuration(
         model=model,
         trainer_configuration=TrainerConfiguration(
-            iterations=500, optimizer_parameters={"lr": 1.0e-4}, log_interval=10
+            optimizer_builder=optimizer_builder,
+            scheduler_builder=scheduler_builder,
+            loss_fn_builder=loss_fn_builder,
+            iterations=500,
+            log_interval=10,
         ),
         quantizer_builder=quantizer_builder,
         recalibrate_quantizers=True,

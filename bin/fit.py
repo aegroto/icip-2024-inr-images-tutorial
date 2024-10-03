@@ -65,11 +65,6 @@ def fit(config, image_file_path, device, state_dump_path=None, initial_state_dic
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
 
-    for key, value in fitted_state_dict.items():
-        if "bound" in key:
-            LOGGER.debug(key)
-            LOGGER.debug(value)
-
     if state_dump_path:
         torch.save(fitted_state_dict, state_dump_path)
 

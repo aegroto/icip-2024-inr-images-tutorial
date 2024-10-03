@@ -1,3 +1,4 @@
+from typing import Callable
 import torch
 import copy
 import statistics
@@ -14,7 +15,9 @@ from modules.training.batch import TrainingBatch, TrainingSample
 @dataclass
 class TrainerConfiguration:
     iterations: int
-    optimizer_parameters: dict = field(default_factory=dict)
+    optimizer_builder: Callable
+    scheduler_builder: Callable
+    loss_fn_builder: Callable
     log_interval: int = 1
     name: str = __name__
 
@@ -51,7 +54,7 @@ class Trainer:
         if self.__current_iterations % self.__config.log_interval != 0:
             return
 
-        self.__logger.debug(content)
+        self.__logger.info(content)
 
     def best_result(self):
         return (self.__best_model, self.__best_loss_value)
@@ -65,11 +68,11 @@ class Trainer:
 
         self.__current_iterations = 0
 
-        optimizer = torch.optim.Adam(
-            model.parameters(), **self.__config.optimizer_parameters
-        )
+        optimizer = self.__config.optimizer_builder(model.parameters())
+        loss_fn = self.__config.loss_fn_builder()
 
-        loss_fn = nn.MSELoss()
+        self.__logger.debug(f"Training with optimizer: {optimizer}")
+        self.__logger.debug(f"Training with loss function: {loss_fn}")
 
         for iteration in range(1, self.__config.iterations + 1):
             self.__current_iterations += 1
