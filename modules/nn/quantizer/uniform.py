@@ -45,7 +45,7 @@ class UniformQuantizer(Quantizer, IPackable):
         LOGGER.debug(f"New calibrated bound: {self.bound}")
 
     def _max_symbol(self) -> int:
-        return 2 ** (self.bits.to(torch.float32) - 1)
+        return 2 ** (self.bits.to(torch.float32) - 1) - 1
 
     def quantize(self, x: Tensor) -> Tensor:
         y = x.sub(self.zero)
