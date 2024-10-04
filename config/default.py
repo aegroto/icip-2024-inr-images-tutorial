@@ -1,10 +1,13 @@
 import torch
+from torch import nn
 
 from config import Configuration
-from modules.nn.image_representation.coordinates_based import CoordinatesBasedRepresentation
+from modules.nn.image_representation.coordinates_based import (
+    CoordinatesBasedRepresentation,
+)
+from modules.nn.mlp import MultiLayerPerceptron
 from modules.nn.positional_encoder import PositionalEncoder
 from modules.nn.quantizer.uniform import UniformQuantizer
-from modules.nn.siren import Siren
 from modules.training import TrainerConfiguration
 
 
@@ -18,11 +21,12 @@ def model_builder():
     #     output_features=3,
     # )
 
-    network = Siren(
+    network = MultiLayerPerceptron(
         input_features=encoder.output_features_for(2),
-        hidden_features=256,
-        hidden_layers=1,
+        hidden_features=128,
+        hidden_layers=3,
         output_features=3,
+        activation_builder=lambda: nn.ReLU(),
     )
 
     return CoordinatesBasedRepresentation(encoder, network)

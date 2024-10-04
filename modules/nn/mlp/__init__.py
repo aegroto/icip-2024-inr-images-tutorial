@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Callable
 from torch import Tensor, nn
 
@@ -8,32 +7,28 @@ from modules.nn.quantizable_linear import QuantizableLinear
 LOGGER = init_logger(__name__)
 
 
-@dataclass
-class MultiLayerPerceptronConfig:
-    input_features: int = None
-    hidden_features: int = None
-    hidden_layers: int = None
-    output_features: int = None
-    activation_builder: Callable = None
-
-
 class MultiLayerPerceptron(nn.Module):
-    def __init__(self, config: MultiLayerPerceptronConfig):
+    def __init__(
+        self,
+        input_features: int,
+        hidden_features: int,
+        hidden_layers: int,
+        output_features: int,
+        activation_builder: Callable = None,
+    ):
         super().__init__()
 
-        activation_builder = config.activation_builder or (lambda: nn.Identity())
+        activation_builder = activation_builder or (lambda: nn.Identity())
 
         layers = list()
-        layers.append(QuantizableLinear(config.input_features, config.hidden_features))
+        layers.append(QuantizableLinear(input_features, hidden_features))
         layers.append(activation_builder())
 
-        for i in range(config.hidden_layers):
-            layers.append(
-                QuantizableLinear(config.hidden_features, config.hidden_features)
-            )
+        for _ in range(hidden_layers):
+            layers.append(QuantizableLinear(hidden_features, hidden_features))
             layers.append(activation_builder())
 
-        layers.append(QuantizableLinear(config.hidden_features, config.output_features))
+        layers.append(QuantizableLinear(hidden_features, output_features))
         self.layers = nn.Sequential(*layers)
 
     def forward(self, x: Tensor) -> Tensor:
