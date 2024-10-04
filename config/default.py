@@ -7,7 +7,7 @@ from modules.nn.image_representation.coordinates_based import (
 from modules.nn.positional_encoder import PositionalEncoder
 from modules.nn.quantizer.uniform import UniformQuantizer
 from modules.nn.siren import Siren
-from modules.training import TrainerConfiguration
+from modules.training import Trainer, TrainerConfiguration
 
 
 def model_builder():
@@ -21,6 +21,24 @@ def model_builder():
     )
 
     return CoordinatesBasedRepresentation(encoder, network)
+
+
+def trainer_builder_for(iterations: int):
+    def __builder(model, image, device):
+        return Trainer(
+            TrainerConfiguration(
+                optimizer_builder=optimizer_builder,
+                scheduler_builder=scheduler_builder,
+                loss_fn_builder=loss_fn_builder,
+                iterations=iterations,
+                log_interval=10,
+            ),
+            model,
+            image,
+            device,
+        )
+
+    return __builder
 
 
 def quantizer_builder(_):
@@ -42,23 +60,11 @@ def loss_fn_builder():
 phases = {
     "full_precision": FittingPhaseConfiguration(
         model_builder=model_builder,
-        trainer_configuration=TrainerConfiguration(
-            optimizer_builder=optimizer_builder,
-            scheduler_builder=scheduler_builder,
-            loss_fn_builder=loss_fn_builder,
-            iterations=100,
-            log_interval=10,
-        ),
+        trainer_builder=trainer_builder_for(500),
     ),
     "8bits_qat": FittingPhaseConfiguration(
         model_builder=model_builder,
-        trainer_configuration=TrainerConfiguration(
-            optimizer_builder=optimizer_builder,
-            scheduler_builder=scheduler_builder,
-            loss_fn_builder=loss_fn_builder,
-            iterations=50,
-            log_interval=10,
-        ),
+        trainer_builder=trainer_builder_for(100),
         quantizer_builder=quantizer_builder,
         recalibrate_quantizers=True,
     ),

@@ -29,7 +29,7 @@ def __load_args():
     return parser.parse_args()
 
 
-def __fit(
+def __fit_in_phase(
     config, image_file_path, device, state_dump_path=None, initial_state_dict=None
 ):
     image = load_image_tensor(image_file_path).to(device)
@@ -47,7 +47,7 @@ def __fit(
 
     LOGGER.debug(f"Model architecture: {model}")
 
-    trainer = Trainer(config.trainer_configuration, model, image, device)
+    trainer = config.trainer_builder(model, image, device)
 
     try:
         trainer.train()
@@ -78,7 +78,7 @@ def __run_phase(config, args, phase_name, device, initial_state_dict=None):
 
     image_resolution = read_image_resolution(args.uncompressed_image_path)
 
-    trained_state_dict = __fit(
+    trained_state_dict = __fit_in_phase(
         config,
         args.uncompressed_image_path,
         device,
