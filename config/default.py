@@ -15,7 +15,7 @@ def model_builder():
 
     network = Siren(
         input_features=encoder.output_features_for(2),
-        hidden_features=256,
+        hidden_features=64,
         hidden_layers=1,
         output_features=3,
     )

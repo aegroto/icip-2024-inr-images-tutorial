@@ -93,6 +93,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.20.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-ng-2.2.2-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.6-ha6fb4c9_0.conda
+      - pypi: https://files.pythonhosted.org/packages/02/c0/e9ff284e3e0f9cfcad038c9e9ddb22b613ce03465f57b045bd1c163bec25/constriction-0.4.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b9/f8/feced7779d755758a52d1f6635d990b8d98dc0a29fa568bbe0625f18fdf3/filelock-3.16.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/a0/6aaea0c2fbea2f89bfd5db25fb1e3481896a423002ebe4e55288907a97a3/fsspec-2024.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/31/80/3a54838c3fb461f6fec263ebf3a3a41771bd05190238de3486aae8540c36/jinja2-3.1.4-py3-none-any.whl
@@ -303,6 +304,14 @@ packages:
   purls: []
   size: 150272
   timestamp: 1684262827894
+- kind: pypi
+  name: constriction
+  version: 0.4.0
+  url: https://files.pythonhosted.org/packages/02/c0/e9ff284e3e0f9cfcad038c9e9ddb22b613ce03465f57b045bd1c163bec25/constriction-0.4.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 8ab7422d1e0e7935083937fd820c5bfa047415dd2fa70fc43447df84aed46776
+  requires_dist:
+  - numpy>=1.16,<3.0
+  requires_python: '>=3.8'
 - kind: conda
   name: dav1d
   version: 1.2.1

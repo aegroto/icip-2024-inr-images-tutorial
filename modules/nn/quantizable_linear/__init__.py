@@ -5,6 +5,13 @@ import torch
 import math
 from torch import Tensor, nn
 
+from modules.entropy_coding import (
+    build_laplace_entropy_model,
+    build_range_decoder,
+    build_range_encoder,
+    entropy_decode,
+    entropy_encode,
+)
 from modules.logging import init_logger
 from modules.nn.quantizer import IQuantizable, Quantizer
 from modules.nn.quantizer.dummy import DummyQuantizer
@@ -34,23 +41,6 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         equantized_weight = self.weight_quantizer(self.weight)
         equantized_bias = self.bias_quantizer(self.bias)
 
-        with torch.no_grad():
-            LOGGER.debug(f"Unquantized weight mean: {self.weight.mean()}")
-            test_param = equantized_weight
-            LOGGER.debug(f"Estimated quantized weight mean: {test_param.mean()}")
-            test_param = self.weight_quantizer(test_param)
-            LOGGER.debug(f"2nd Estimated quantized weight mean: {test_param.mean()}")
-            test_param = self.weight_quantizer(test_param)
-            LOGGER.debug(f"3rd Estimated quantized weight mean: {test_param.mean()}")
-
-            LOGGER.debug(f"Unquantized bias mean: {self.bias.mean()}")
-            test_param = equantized_bias
-            LOGGER.debug(f"Estimated quantized bias mean: {test_param.mean()}")
-            test_param = self.bias_quantizer(test_param)
-            LOGGER.debug(f"2nd Estimated quantized bias mean: {test_param.mean()}")
-            test_param = self.bias_quantizer(test_param)
-            LOGGER.debug(f"3rd Estimated quantized bias mean: {test_param.mean()}")
-
         return (equantized_weight, equantized_bias)
 
     def init_quantizers(self, quantizer_builder: Callable):
@@ -68,56 +58,41 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         self.bias.set_(equantized_bias)
 
     def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> bytes:
+        LOGGER.debug(" --- Packing")
+
         data = bytes()
         data += quantizer.pack()
 
-        LOGGER.debug(f"Tensor to be packed mean: {tensor.mean()}")
+        LOGGER.debug(f"Tensor mean: {tensor.mean()}")
 
         quantized = quantizer.quantize(tensor)
 
-        LOGGER.debug(f"Quantized tensor to be packed mean: {quantized.mean()}")
+        LOGGER.debug(f"Quantized tensor mean: {quantized.mean()}")
 
-        dequantized_test = quantizer.dequantize(quantized)
-        LOGGER.debug(f"Dequantized test tensor mean: {dequantized_test.mean()}")
-
-        serialized_tensor = (
-            quantized.cpu().to(torch.int8).numpy().astype(numpy.int8).tobytes()
+        serialized_tensor = entropy_encode(
+            quantized, build_range_encoder, build_laplace_entropy_model
         )
-        data += struct.pack("!I", len(serialized_tensor))
         data += serialized_tensor
-
-        LOGGER.debug(f"Serialized tensor length: {len(serialized_tensor)}")
 
         return data
 
     def __unpack_tensor(
         self, tensor: Tensor, quantizer: Quantizer, stream: bytes
     ) -> int:
+        LOGGER.debug(" --- Unpacking")
         read_bytes = quantizer.unpack(stream)
 
-        serialized_tensor_len = struct.unpack(
-            "!I", stream[read_bytes : read_bytes + 4]
-        )[0]
-        read_bytes += 4
-        serialized_tensor_bytes = stream[
-            read_bytes : read_bytes + serialized_tensor_len
-        ]
-        read_bytes += serialized_tensor_len
-        array = numpy.frombuffer(serialized_tensor_bytes, numpy.int8).copy()
-
-        LOGGER.debug(f"Unpacked array size: {len(array)}")
-
-        quantized_tensor = (
-            torch.from_numpy(array)
-            .to(torch.float32)
-            .to(tensor.device)
-            .reshape(tensor.shape)
+        (quantized, decoding_read_bytes) = entropy_decode(
+            stream[read_bytes:], build_range_decoder, build_laplace_entropy_model
         )
-        LOGGER.debug(f"Unpacked quantized tensor mean: {quantized_tensor.mean()}")
+        read_bytes += decoding_read_bytes
+        LOGGER.debug(f"Unpacked quantized tensor mean: {quantized.mean()}")
 
         quantizer.to(tensor.device)
-        dequantized_tensor = quantizer.dequantize(quantized_tensor)
-        tensor.set_(dequantized_tensor)
+        quantized = quantized.to(tensor.device).reshape(tensor.shape)
+
+        dequantized = quantizer.dequantize(quantized)
+        tensor.set_(dequantized)
 
         LOGGER.debug(f"Unpacked tensor mean: {tensor.mean()}")
 
