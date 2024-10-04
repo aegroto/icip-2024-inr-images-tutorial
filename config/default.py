@@ -1,6 +1,6 @@
 import torch
 
-from config import Configuration
+from config import FittingPhaseConfiguration
 from modules.nn.image_representation.coordinates_based import (
     CoordinatesBasedRepresentation,
 )
@@ -40,7 +40,7 @@ def loss_fn_builder():
 
 
 phases = {
-    "fitting": Configuration(
+    "full_precision": FittingPhaseConfiguration(
         model_builder=model_builder,
         trainer_configuration=TrainerConfiguration(
             optimizer_builder=optimizer_builder,
@@ -50,7 +50,7 @@ phases = {
             log_interval=10,
         ),
     ),
-    "quantization": Configuration(
+    "8bits_qat": FittingPhaseConfiguration(
         model_builder=model_builder,
         trainer_configuration=TrainerConfiguration(
             optimizer_builder=optimizer_builder,
