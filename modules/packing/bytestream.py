@@ -24,4 +24,3 @@ class ByteStream:
 
     def __len__(self):
         return len(self.__data)
-

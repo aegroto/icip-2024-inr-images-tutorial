@@ -1,6 +1,4 @@
-import struct
 from typing import Callable
-import numpy
 import torch
 import math
 from torch import Tensor, nn
@@ -77,9 +75,7 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
         return stream
 
-    def __unpack_tensor(
-        self, tensor: Tensor, quantizer: Quantizer, stream: ByteStream
-    ):
+    def __unpack_tensor(self, tensor: Tensor, quantizer: Quantizer, stream: ByteStream):
         LOGGER.debug(" --- Unpacking")
         quantizer.unpack(stream)
 
@@ -104,9 +100,7 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
     def unpack(self, stream: ByteStream):
         self.__unpack_tensor(self.weight, self.weight_quantizer, stream)
-        self.__unpack_tensor(
-            self.bias, self.bias_quantizer, stream
-        )
+        self.__unpack_tensor(self.bias, self.bias_quantizer, stream)
 
     def forward(self, x: Tensor) -> Tensor:
         (equantized_weight, equantized_bias) = self.__get_estimated_quantized_params()
