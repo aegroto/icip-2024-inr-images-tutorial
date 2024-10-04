@@ -4,7 +4,7 @@ import torch
 import os
 from bin.export_stats import export_stats
 from bin.infer import infer
-from modules.data import load_image_tensor, read_image_resolution
+from modules.data import ImageData
 from modules.device import load_device
 from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
@@ -13,14 +13,13 @@ from modules.nn.quantizer import (
     initialize_quantizers,
     recalibrate_quantizers,
 )
-from modules.training import Trainer
 
 LOGGER = init_logger(__name__)
 
 
 def __load_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("uncompressed_image_path", type=str)
+    parser.add_argument("image_file_path", type=str)
     parser.add_argument("results_folder", type=str)
     parser.add_argument("--config", type=str, required=False, default="default")
     parser.add_argument(
@@ -30,9 +29,8 @@ def __load_args():
 
 
 def __fit_in_phase(
-    config, image_file_path, device, state_dump_path=None, initial_state_dict=None
+    config, image, device, state_dump_path=None, initial_state_dict=None
 ):
-    image = load_image_tensor(image_file_path).to(device)
     model = config.model_builder()
 
     if initial_state_dict is not None:
@@ -61,44 +59,40 @@ def __fit_in_phase(
 
     fitted_state_dict = copy.deepcopy(model.state_dict())
 
-    if state_dump_path:
-        torch.save(fitted_state_dict, state_dump_path)
-
     return fitted_state_dict
 
 
-def __run_phase(config, args, phase_name, device, initial_state_dict=None):
-    base_folder = f"{args.results_folder}/{phase_name}/"
-
-    state_dump_path = f"{base_folder}/state.pth"
-    inferred_image_path = f"{base_folder}/inferred.png"
-    stats_dump_path = f"{base_folder}/stats.json"
-
-    os.makedirs(base_folder, exist_ok=True)
-
-    image_resolution = read_image_resolution(args.uncompressed_image_path)
-
+def __run_phase(config, image_data: ImageData, device, initial_state_dict=None, dump_folder=None):
     trained_state_dict = __fit_in_phase(
         config,
-        args.uncompressed_image_path,
+        image_data.tensor,
         device,
-        state_dump_path,
-        initial_state_dict,
+        initial_state_dict=initial_state_dict,
     )
-    infer(
-        config,
-        trained_state_dict,
-        image_resolution,
-        inferred_image_path,
-        device,
-    )
-    export_stats(
-        args.uncompressed_image_path,
-        inferred_image_path,
-        state_dump_path,
-        stats_dump_path,
-        device,
-    )
+
+    if dump_folder is not None:
+        state_dump_path = f"{dump_folder}/state.pth"
+        inferred_image_path = f"{dump_folder}/inferred.png"
+        stats_dump_path = f"{dump_folder}/stats.json"
+
+        os.makedirs(dump_folder, exist_ok=True)
+
+        torch.save(trained_state_dict, state_dump_path)
+
+        infer(
+            config,
+            trained_state_dict,
+            image_data.resolution(),
+            inferred_image_path,
+            device,
+        )
+        export_stats(
+            image_data.path,
+            inferred_image_path,
+            state_dump_path,
+            stats_dump_path,
+            device,
+        )
 
     return trained_state_dict
 
@@ -116,9 +110,12 @@ def main():
     else:
         current_state_dict = None
 
+    image_data = ImageData(args.image_file_path, device)
+
     for phase_name, phase_config in config.phases.items():
+        dump_folder = f"{args.results_folder}/{phase_name}"
         current_state_dict = __run_phase(
-            phase_config, args, phase_name, device, current_state_dict
+            phase_config, image_data, device, current_state_dict, dump_folder
         )
 
 

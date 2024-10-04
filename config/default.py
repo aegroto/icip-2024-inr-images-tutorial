@@ -60,11 +60,11 @@ def loss_fn_builder():
 phases = {
     "full_precision": FittingPhaseConfiguration(
         model_builder=model_builder,
-        trainer_builder=trainer_builder_for(500),
+        trainer_builder=trainer_builder_for(100),
     ),
     "8bits_qat": FittingPhaseConfiguration(
         model_builder=model_builder,
-        trainer_builder=trainer_builder_for(100),
+        trainer_builder=trainer_builder_for(20),
         quantizer_builder=quantizer_builder,
         recalibrate_quantizers=True,
     ),

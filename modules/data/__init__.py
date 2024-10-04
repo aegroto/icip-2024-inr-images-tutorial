@@ -1,3 +1,4 @@
+from typing import Tuple
 import torchvision
 import PIL
 import torch
@@ -7,15 +8,20 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
+class ImageData:
+    def __init__(self, path, device):
+        pil_image = PIL.Image.open(path)
 
-def load_image_tensor(path) -> torch.Tensor:
-    pil_image = PIL.Image.open(path)
-    image = torchvision.transforms.functional.to_tensor(pil_image)
+        self.path = path
+        self.tensor = torchvision.transforms.functional.to_tensor(pil_image).to(device)
+        self.height = self.tensor.shape[1]
+        self.width = self.tensor.shape[2]
 
-    LOGGER.debug(f"Loaded image shape: {image.shape}")
+    def resolution(self) -> Tuple[int, int]:
+        return (self.height, self.width)
 
-    return image
-
+    def num_pixels(self) -> int:
+        return self.width * self.height
 
 def dump_reconstructed_tensor(reconstructed_tensor: torch.Tensor, path: str):
     reconstructed_image = (
@@ -31,11 +37,3 @@ def dump_reconstructed_tensor(reconstructed_tensor: torch.Tensor, path: str):
     LOGGER.debug(f"Dumped image shape: {reconstructed_image.shape}")
 
     io.imsave(path, reconstructed_image)
-
-
-def read_image_resolution(path):
-    image_tensor = load_image_tensor(path)
-
-    (height, width) = (image_tensor.shape[1], image_tensor.shape[2])
-
-    return (height, width)

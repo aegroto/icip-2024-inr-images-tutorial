@@ -4,7 +4,7 @@ import os
 import torch
 
 
-from modules.data import load_image_tensor
+from modules.data import ImageData
 from modules.device import load_device
 from modules.logging import init_logger, setup_logging
 
@@ -53,14 +53,14 @@ def export_stats(
     stats_dump_path,
     device,
 ):
-    original_image = load_image_tensor(original_image_path).to(device)
-    reconstructed_image = load_image_tensor(reconstructed_image_path).to(device)
+    original_image = ImageData(original_image_path, device)
+    reconstructed_image = ImageData(reconstructed_image_path, device)
     compressed_file_size = os.stat(compressed_file_path).st_size
 
-    num_pixels = original_image.numel() / 3
+    num_pixels = original_image.tensor.numel() / 3
 
     stats = dict()
-    stats["psnr"] = __calculate_psnr(original_image, reconstructed_image)
+    stats["psnr"] = __calculate_psnr(original_image.tensor, reconstructed_image.tensor)
     stats["bpp"] = (compressed_file_size * 8) / num_pixels
 
     LOGGER.info(json.dumps(stats, indent=4))
