@@ -15,8 +15,8 @@ def model_builder():
 
     network = Siren(
         input_features=encoder.output_features_for(2),
-        hidden_features=64,
-        hidden_layers=1,
+        hidden_features=128,
+        hidden_layers=2,
         output_features=3,
     )
 
@@ -46,7 +46,7 @@ phases = {
             optimizer_builder=optimizer_builder,
             scheduler_builder=scheduler_builder,
             loss_fn_builder=loss_fn_builder,
-            iterations=1000,
+            iterations=100,
             log_interval=10,
         ),
     ),
@@ -56,7 +56,7 @@ phases = {
             optimizer_builder=optimizer_builder,
             scheduler_builder=scheduler_builder,
             loss_fn_builder=loss_fn_builder,
-            iterations=500,
+            iterations=50,
             log_interval=10,
         ),
         quantizer_builder=quantizer_builder,

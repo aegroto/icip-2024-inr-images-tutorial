@@ -1,4 +1,5 @@
 import argparse
+import os
 from modules.device import load_device
 import torch
 
@@ -32,11 +33,6 @@ def main():
 
 
 def pack(config, state_dict, output_path, device):
-    for key, value in state_dict.items():
-        if "bound" in key:
-            LOGGER.debug(key)
-            LOGGER.debug(value)
-
     model = config.model_builder()
     initialize_quantizers(model, config.quantizer_builder)
     model.load_state_dict(state_dict)
@@ -48,6 +44,7 @@ def pack(config, state_dict, output_path, device):
 
     LOGGER.debug(f"Packed model stream length: {len(stream)}")
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "wb") as file:
         file.write(stream.get_bytes())
 
