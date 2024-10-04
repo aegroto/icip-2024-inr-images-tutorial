@@ -1,4 +1,3 @@
-import copy
 import argparse
 from modules.device import load_device
 import torch

@@ -1,22 +1,31 @@
 import torch
 
 from config import Configuration
-from modules.nn.image_representation.siren import SirenRepresentation
-from modules.nn.positional_encoder import PositionalEncoderConfig
+from modules.nn.image_representation.coordinates_based import CoordinatesBasedRepresentation
+from modules.nn.positional_encoder import PositionalEncoder
 from modules.nn.quantizer.uniform import UniformQuantizer
-from modules.nn.siren import SirenConfig
+from modules.nn.siren import Siren
 from modules.training import TrainerConfiguration
 
+
 def model_builder():
-    return SirenRepresentation(
-        encoder_config=PositionalEncoderConfig(num_frequencies=16, scale=1.4),
-        network_config=SirenConfig(
-            input_features=2,
-            hidden_features=256,
-            hidden_layers=1,
-            output_features=3,
-        ),
+    encoder = PositionalEncoder(num_frequencies=16, scale=1.4)
+
+    # network = Siren(
+    #     input_features=encoder.output_features_for(2),
+    #     hidden_features=256,
+    #     hidden_layers=1,
+    #     output_features=3,
+    # )
+
+    network = Siren(
+        input_features=encoder.output_features_for(2),
+        hidden_features=256,
+        hidden_layers=1,
+        output_features=3,
     )
+
+    return CoordinatesBasedRepresentation(encoder, network)
 
 
 def quantizer_builder(_):

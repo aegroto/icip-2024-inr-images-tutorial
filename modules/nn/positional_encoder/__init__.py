@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import torch
 from torch import Tensor, nn
 
@@ -7,17 +6,11 @@ from modules.logging import init_logger
 LOGGER = init_logger(__name__)
 
 
-@dataclass
-class PositionalEncoderConfig:
-    num_frequencies: int
-    scale: float = 2.0
-
-
 class PositionalEncoder(nn.Module):
-    def __init__(self, config: PositionalEncoderConfig):
+    def __init__(self, num_frequencies: int, scale: float = 2.0):
         super().__init__()
 
-        periods = [torch.pi * (config.scale**i) for i in range(config.num_frequencies)]
+        periods = [torch.pi * (scale**i) for i in range(num_frequencies)]
 
         self.register_buffer("periods", torch.Tensor(periods), persistent=False)
 

@@ -1,26 +1,18 @@
-from torch import Tensor, Size
+from torch import Tensor, Size, nn
 
 from modules.helpers.coordinates import generate_coordinates_grid
 from modules.logging import init_logger
 from modules.nn.image_representation.base import ImplicitImageRepresentation
-from modules.nn.positional_encoder import PositionalEncoder, PositionalEncoderConfig
-from modules.nn.siren import Siren, SirenConfig
 
 LOGGER = init_logger(__name__)
 
 
-class SirenRepresentation(ImplicitImageRepresentation):
-    def __init__(
-        self, encoder_config: PositionalEncoderConfig, network_config: SirenConfig
-    ):
+class CoordinatesBasedRepresentation(ImplicitImageRepresentation):
+    def __init__(self, encoder: nn.Module, network: nn.Module):
         super().__init__()
 
-        self.encoder = PositionalEncoder(encoder_config)
-
-        network_config.input_features = self.encoder.output_features_for(
-            network_config.input_features
-        )
-        self.network = Siren(network_config)
+        self.encoder = encoder
+        self.network = network
 
     def generate_input(self, output_shape: Size) -> Tensor:
         (height, width) = (output_shape[0], output_shape[1])
