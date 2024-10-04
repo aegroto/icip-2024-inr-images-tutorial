@@ -5,6 +5,7 @@ from torch import Tensor
 from modules.logging import init_logger
 from modules.nn.quantizer import Quantizer
 from modules.packing import IPackable
+from modules.packing.bytestream import ByteStream
 
 LOGGER = init_logger(__name__)
 
@@ -17,19 +18,19 @@ class UniformQuantizer(Quantizer, IPackable):
         self.register_buffer("zero", Tensor([0.0]), persistent=True)
         self.register_buffer("bound", Tensor([1.0]), persistent=True)
 
-    def pack(self) -> bytes:
+    def pack(self) -> ByteStream:
         LOGGER.debug(
             f"Packing quantization values::  bits: {self.bits} bound: {self.bound}"
         )
 
-        data = bytes()
-        data += struct.pack("!h", self.bits.item())
-        data += struct.pack("!f", self.bound.item())
-        return data
+        stream = ByteStream()
+        stream.write(struct.pack("!h", self.bits.item()))
+        stream.write(struct.pack("!f", self.bound.item()))
+        return stream
 
-    def unpack(self, stream: bytes) -> int:
-        bits = struct.unpack("!h", stream[0:2])[0]
-        bound = struct.unpack("!f", stream[2:6])[0]
+    def unpack(self, stream: ByteStream):
+        bits = struct.unpack("!h", stream.read(2))[0]
+        bound = struct.unpack("!f", stream.read(4))[0]
 
         self.bits = Tensor([bits])
         self.bound = Tensor([bound])
@@ -37,8 +38,6 @@ class UniformQuantizer(Quantizer, IPackable):
         LOGGER.debug(
             f"Unpacked quantization values::  bits: {self.bits} bound: {self.bound}"
         )
-
-        return 6
 
     def calibrate(self, x: Tensor):
         self.bound = Tensor([x.abs().max().item()]).to(x.device)

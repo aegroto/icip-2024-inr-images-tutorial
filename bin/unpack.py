@@ -6,6 +6,7 @@ from modules.helpers.config import load_config
 from modules.logging import init_logger, setup_logging
 from modules.nn.quantizer import initialize_quantizers
 from modules.packing import unpack_model
+from modules.packing.bytestream import ByteStream
 
 LOGGER = init_logger(__name__)
 
@@ -26,7 +27,7 @@ def main():
     device = load_device()
     config = load_config(args.config)
 
-    packed_stream = open(args.packed_path, "rb").read()
+    packed_stream = ByteStream(open(args.packed_path, "rb").read())
 
     unpack(config, packed_stream, args.state_dump_path, device)
 

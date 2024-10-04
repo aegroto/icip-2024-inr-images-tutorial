@@ -49,7 +49,7 @@ def pack(config, state_dict, output_path, device):
     LOGGER.debug(f"Packed model stream length: {len(stream)}")
 
     with open(output_path, "wb") as file:
-        file.write(stream)
+        file.write(stream.get_bytes())
 
 
 if __name__ == "__main__":

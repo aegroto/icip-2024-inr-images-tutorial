@@ -16,6 +16,7 @@ from modules.logging import init_logger
 from modules.nn.quantizer import IQuantizable, Quantizer
 from modules.nn.quantizer.dummy import DummyQuantizer
 from modules.packing import IPackable
+from modules.packing.bytestream import ByteStream
 
 LOGGER = init_logger(__name__)
 
@@ -57,11 +58,11 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
         self.weight.set_(equantized_weight)
         self.bias.set_(equantized_bias)
 
-    def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> bytes:
+    def __pack_tensor(self, tensor: Tensor, quantizer: Quantizer) -> ByteStream:
         LOGGER.debug(" --- Packing")
 
-        data = bytes()
-        data += quantizer.pack()
+        stream = ByteStream()
+        stream.append(quantizer.pack())
 
         LOGGER.debug(f"Tensor mean: {tensor.mean()}")
 
@@ -69,23 +70,22 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
         LOGGER.debug(f"Quantized tensor mean: {quantized.mean()}")
 
-        serialized_tensor = entropy_encode(
+        encoded_stream = entropy_encode(
             quantized, build_range_encoder, build_laplace_entropy_model
         )
-        data += serialized_tensor
+        stream.append(encoded_stream)
 
-        return data
+        return stream
 
     def __unpack_tensor(
-        self, tensor: Tensor, quantizer: Quantizer, stream: bytes
-    ) -> int:
+        self, tensor: Tensor, quantizer: Quantizer, stream: ByteStream
+    ):
         LOGGER.debug(" --- Unpacking")
-        read_bytes = quantizer.unpack(stream)
+        quantizer.unpack(stream)
 
-        (quantized, decoding_read_bytes) = entropy_decode(
-            stream[read_bytes:], build_range_decoder, build_laplace_entropy_model
+        quantized = entropy_decode(
+            stream, build_range_decoder, build_laplace_entropy_model
         )
-        read_bytes += decoding_read_bytes
         LOGGER.debug(f"Unpacked quantized tensor mean: {quantized.mean()}")
 
         quantizer.to(tensor.device)
@@ -96,20 +96,17 @@ class QuantizableLinear(nn.Module, IQuantizable, IPackable):
 
         LOGGER.debug(f"Unpacked tensor mean: {tensor.mean()}")
 
-        return read_bytes
+    def pack(self) -> ByteStream:
+        stream = ByteStream()
+        stream.append(self.__pack_tensor(self.weight, self.weight_quantizer))
+        stream.append(self.__pack_tensor(self.bias, self.bias_quantizer))
+        return stream
 
-    def pack(self) -> bytes:
-        data = bytes()
-        data += self.__pack_tensor(self.weight, self.weight_quantizer)
-        data += self.__pack_tensor(self.bias, self.bias_quantizer)
-        return data
-
-    def unpack(self, stream: bytes) -> int:
-        read_bytes = self.__unpack_tensor(self.weight, self.weight_quantizer, stream)
-        read_bytes += self.__unpack_tensor(
-            self.bias, self.bias_quantizer, stream[read_bytes:]
+    def unpack(self, stream: ByteStream):
+        self.__unpack_tensor(self.weight, self.weight_quantizer, stream)
+        self.__unpack_tensor(
+            self.bias, self.bias_quantizer, stream
         )
-        return read_bytes
 
     def forward(self, x: Tensor) -> Tensor:
         (equantized_weight, equantized_bias) = self.__get_estimated_quantized_params()

@@ -7,6 +7,7 @@ import math
 
 from torch import Tensor
 from modules.logging import init_logger
+from modules.packing.bytestream import ByteStream
 
 
 LOGGER = init_logger(__name__)
@@ -29,7 +30,7 @@ def build_laplace_entropy_model(min_symbol, max_symbol, mean, std):
 
 def entropy_encode(
     quantized_tensor: Tensor, encoder_builder, entropy_model_builder
-) -> bytes:
+) -> ByteStream:
     symbols = quantized_tensor.cpu().to(torch.int32).numpy().flatten()
     num_symbols = len(symbols)
 
@@ -54,55 +55,49 @@ def entropy_encode(
     compressed_buffer = compressed_symbols.tobytes()
     compressed_buffer_len = len(compressed_buffer)
 
-    stream = bytes()
+    stream = ByteStream()
 
-    LOGGER.debug(f"Saving entropy model parameters:: min_symbol: {min_symbol}, max_symbol: {max_symbol}, mean: {mean}, std: {std}")
+    LOGGER.debug(
+        f"Saving entropy model parameters:: min_symbol: {min_symbol}, max_symbol: {max_symbol}, mean: {mean}, std: {std}"
+    )
 
+    LOGGER.debug(
+        f"Encoder:: num symbols: {num_symbols}, compressed_buffer_len: {compressed_buffer_len}"
+    )
 
-    LOGGER.debug(f"Encoder:: num symbols: {num_symbols}, compressed_buffer_len: {compressed_buffer_len}")
+    stream.write(struct.pack("!i", min_symbol))
+    stream.write(struct.pack("!i", max_symbol))
+    stream.write(struct.pack("!f", mean))
+    stream.write(struct.pack("!f", std))
+    stream.write(struct.pack("!I", num_symbols))
 
-    stream += struct.pack("!i", min_symbol)
-    stream += struct.pack("!i", max_symbol)
-    stream += struct.pack("!f", mean)
-    stream += struct.pack("!f", std)
-    stream += struct.pack("!I", num_symbols)
-
-    stream += struct.pack("!I", compressed_buffer_len)
-    stream += compressed_buffer
+    stream.write(struct.pack("!I", compressed_buffer_len))
+    stream.write(compressed_buffer)
 
     return stream
 
 
 def entropy_decode(
-    compressed_stream: bytes, decoder_builder, entropy_model_builder
-) -> Tuple[Tensor, int]:
-    read_bytes = 0
+    compressed_stream: ByteStream, decoder_builder, entropy_model_builder
+) -> Tensor:
+    min_symbol = struct.unpack("!i", compressed_stream.read(4))[0]
+    max_symbol = struct.unpack("!i", compressed_stream.read(4))[0]
+    mean = struct.unpack("!f", compressed_stream.read(4))[0]
+    std = struct.unpack("!f", compressed_stream.read(4))[0]
 
-    min_symbol = struct.unpack("!i", compressed_stream[read_bytes : read_bytes + 4])[0]
-    read_bytes += 4
-    max_symbol = struct.unpack("!i", compressed_stream[read_bytes : read_bytes + 4])[0]
-    read_bytes += 4
-    mean = struct.unpack("!f", compressed_stream[read_bytes : read_bytes + 4])[0]
-    read_bytes += 4
-    std = struct.unpack("!f", compressed_stream[read_bytes : read_bytes + 4])[0]
-    read_bytes += 4
+    LOGGER.debug(
+        f"Unpacked entropy model parameters:: min_symbol: {min_symbol}, max_symbol: {max_symbol}, mean: {mean}, std: {std}"
+    )
 
-    LOGGER.debug(f"Unpacked entropy model parameters:: min_symbol: {min_symbol}, max_symbol: {max_symbol}, mean: {mean}, std: {std}")
+    num_symbols = struct.unpack("!I", compressed_stream.read(4))[0]
 
-    num_symbols = struct.unpack("!I", compressed_stream[read_bytes : read_bytes + 4])[0]
-    read_bytes += 4
+    compressed_buffer_len = struct.unpack("!I", compressed_stream.read(4))[0]
 
-    compressed_buffer_len = struct.unpack(
-        "!I", compressed_stream[read_bytes : read_bytes + 4]
-    )[0]
-    read_bytes += 4
+    LOGGER.debug(
+        f"Decoder:: num symbols: {num_symbols}, compressed_buffer_len: {compressed_buffer_len}"
+    )
 
-    LOGGER.debug(f"Decoder:: num symbols: {num_symbols}, compressed_buffer_len: {compressed_buffer_len}")
-
-    compressed_buffer = compressed_stream[
-        read_bytes : read_bytes + compressed_buffer_len
-    ]
-    read_bytes += compressed_buffer_len
+    compressed_buffer = compressed_stream.read(compressed_buffer_len)
     compressed_symbols = numpy.frombuffer(compressed_buffer, numpy.uint32)
 
     LOGGER.debug(f"Decoder compressed symbols head: {compressed_symbols[0:16]}")
@@ -116,4 +111,4 @@ def entropy_decode(
     LOGGER.debug(f"Decoder symbols head: {symbols[0:16]}")
     LOGGER.debug(f"Decoder symbols tail: {symbols[-16:]}")
 
-    return (torch.from_numpy(symbols).to(torch.float32), read_bytes)
+    return torch.from_numpy(symbols).to(torch.float32)
