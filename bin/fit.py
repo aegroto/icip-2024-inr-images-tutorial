@@ -28,9 +28,7 @@ def __load_args():
     return parser.parse_args()
 
 
-def __fit_in_phase(
-    config, image, device, state_dump_path=None, initial_state_dict=None
-):
+def __fit_in_phase(config, image, device, initial_state_dict=None):
     model = config.model_builder()
 
     if initial_state_dict is not None:
@@ -62,7 +60,9 @@ def __fit_in_phase(
     return fitted_state_dict
 
 
-def __run_phase(config, image_data: ImageData, device, initial_state_dict=None, dump_folder=None):
+def __run_phase(
+    config, image_data: ImageData, device, initial_state_dict=None, dump_folder=None
+):
     trained_state_dict = __fit_in_phase(
         config,
         image_data.tensor,
@@ -106,17 +106,29 @@ def main():
     device = load_device()
 
     if args.initial_state_dict_path is not None:
-        current_state_dict = torch.load(args.initial_state_dict_path, weights_only=True)
+        initial_state_dict = torch.load(args.initial_state_dict_path, weights_only=True)
     else:
-        current_state_dict = None
+        initial_state_dict = None
 
     image_data = ImageData(args.image_file_path, device)
 
+    fit(config, image_data, device, initial_state_dict, args.results_folder)
+
+
+def fit(config, image_data, device, initial_state_dict=None, results_folder=None):
+    current_state_dict = initial_state_dict
+
     for phase_name, phase_config in config.phases.items():
-        dump_folder = f"{args.results_folder}/{phase_name}"
+        if results_folder:
+            dump_folder = f"{results_folder}/{phase_name}"
+        else:
+            dump_folder = None
+
         current_state_dict = __run_phase(
             phase_config, image_data, device, current_state_dict, dump_folder
         )
+
+    return current_state_dict
 
 
 if __name__ == "__main__":

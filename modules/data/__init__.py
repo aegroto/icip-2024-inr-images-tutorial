@@ -8,6 +8,7 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
+
 class ImageData:
     def __init__(self, path, device):
         pil_image = PIL.Image.open(path)
@@ -22,6 +23,7 @@ class ImageData:
 
     def num_pixels(self) -> int:
         return self.width * self.height
+
 
 def dump_reconstructed_tensor(reconstructed_tensor: torch.Tensor, path: str):
     reconstructed_image = (

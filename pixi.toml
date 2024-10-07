@@ -14,6 +14,9 @@ export_stats = "python -m bin.export_stats"
 pack = "python -m bin.pack"
 unpack = "python -m bin.unpack"
 
+encode = "python -m bin.encode"
+decode = "python -m bin.decode"
+
 format = "ruff format"
 lint = "ruff check"
 

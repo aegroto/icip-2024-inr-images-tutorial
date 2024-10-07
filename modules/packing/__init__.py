@@ -51,5 +51,3 @@ def unpack_model(model: ImplicitImageRepresentation, stream: ByteStream):
     for module in packable_modules:
         module.unpack(stream)
         LOGGER.debug(f"Remaining stream size: {len(stream)}")
-
-    return stream

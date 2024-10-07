@@ -29,10 +29,12 @@ def main():
 
     packed_stream = ByteStream(open(args.packed_path, "rb").read())
 
-    unpack(config, packed_stream, args.state_dump_path, device)
+    unpacked_state_dict = unpack(config, packed_stream, device)
+
+    torch.save(unpacked_state_dict, args.state_dump_path)
 
 
-def unpack(config, packed_stream, output_path, device):
+def unpack(config, packed_stream, device):
     model = config.model_builder()
     initialize_quantizers(model, config.quantizer_builder)
     model.to(device)
@@ -41,7 +43,8 @@ def unpack(config, packed_stream, output_path, device):
 
     with torch.no_grad():
         unpack_model(model, packed_stream)
-        torch.save(model.state_dict(), output_path)
+
+    return model.state_dict()
 
 
 if __name__ == "__main__":

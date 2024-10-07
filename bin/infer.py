@@ -20,7 +20,7 @@ def __load_args():
     return parser.parse_args()
 
 
-def __parse_resolution(resolution_str: str) -> tuple[int, int]:
+def parse_resolution(resolution_str: str) -> tuple[int, int]:
     (width_str, height_str) = tuple(resolution_str.split("x"))
 
     return (int(height_str), int(width_str))
@@ -34,7 +34,7 @@ def main():
     device = load_device()
     config = load_config(args.config)
 
-    resolution = __parse_resolution(args.resolution)
+    resolution = parse_resolution(args.resolution)
     state_dict = torch.load(args.state_path, weights_only=True)
 
     infer(config, state_dict, resolution, args.output_dump_path, device)
