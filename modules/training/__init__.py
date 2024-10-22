@@ -97,8 +97,6 @@ class Trainer:
                 loss_value *= loss_norm
                 loss_value.backward()
 
-            scheduler.step()
-
             average_loss_value = statistics.mean(iteration_loss_values)
 
             self.__log(f"Average iteration loss value: {average_loss_value:.5f}")
@@ -108,3 +106,4 @@ class Trainer:
                 self.__best_model = copy.deepcopy(model)
 
             optimizer.step()
+            scheduler.step()
