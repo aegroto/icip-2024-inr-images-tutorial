@@ -32,7 +32,7 @@ def trainer_builder_for(iterations: int):
                 loss_fn_builder=loss_fn_builder,
                 iterations=iterations,
                 log_interval=10,
-                shuffle_factor=1
+                shuffle_factor=16
             ),
             model,
             image,
