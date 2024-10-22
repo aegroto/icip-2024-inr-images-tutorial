@@ -41,31 +41,36 @@ class Trainer:
 
     def __shuffle_tensor(self, tensor: Tensor) -> Tensor:
         unsqueezed = tensor.movedim(2, 0).unsqueeze(1)
-        shuffled = nn.functional.pixel_unshuffle(unsqueezed, self.__config.shuffle_factor)
+        shuffled = nn.functional.pixel_unshuffle(
+            unsqueezed, self.__config.shuffle_factor
+        )
         reshaped = shuffled.movedim(0, 3)
         return reshaped
 
     def __generate_batch(self) -> TrainingBatch:
         reshaped_image = self.__target_image.movedim(0, 2)
 
-        input = self.__model.generate_input(reshaped_image.shape).to(
-            self.__device
-        )
+        input = self.__model.generate_input(reshaped_image.shape).to(self.__device)
 
-        self.__logger.debug(f"Unshuffled input and image shapes: {input.shape} {reshaped_image.shape}")
+        self.__logger.debug(
+            f"Unshuffled input and image shapes: {input.shape} {reshaped_image.shape}"
+        )
 
         shuffled_input = self.__shuffle_tensor(input)
         shuffled_image = self.__shuffle_tensor(reshaped_image)
 
-        self.__logger.debug(f"Shuffled input and image shapes: {shuffled_input.shape} {shuffled_image.shape}")
+        self.__logger.debug(
+            f"Shuffled input and image shapes: {shuffled_input.shape} {shuffled_image.shape}"
+        )
 
         batch = TrainingBatch()
 
-        for (input_sample, image_sample) in zip(
-            shuffled_input.unbind(0),
-            shuffled_image.unbind(0)
+        for input_sample, image_sample in zip(
+            shuffled_input.unbind(0), shuffled_image.unbind(0)
         ):
-            self.__logger.debug(f"Sample input and image shapes: {input_sample.shape} {image_sample.shape}")
+            self.__logger.debug(
+                f"Sample input and image shapes: {input_sample.shape} {image_sample.shape}"
+            )
             batch.add_sample(TrainingSample(input_sample, image_sample))
 
         return batch

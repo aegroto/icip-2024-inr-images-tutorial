@@ -6,6 +6,7 @@ from modules.logging import init_logger
 
 LOGGER = init_logger(__name__)
 
+
 def load_seed_from_env():
     try:
         seed = os.environ["RANDOM_SEED"]
@@ -13,4 +14,3 @@ def load_seed_from_env():
         random.seed(seed)
     except KeyError:
         LOGGER.warning("Random seed not set, results may not be reproducible")
-
