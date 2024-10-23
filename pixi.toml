@@ -7,12 +7,7 @@ platforms = ["linux-64"]
 version = "0.1.0"
 
 [tasks]
-fit = "python -m bin.fit"
 capabilities = "python -m bin.capabilities"
-infer = "python -m bin.infer"
-export_stats = "python -m bin.export_stats"
-pack = "python -m bin.pack"
-unpack = "python -m bin.unpack"
 
 encode = "python -m bin.encode"
 decode = "python -m bin.decode"
