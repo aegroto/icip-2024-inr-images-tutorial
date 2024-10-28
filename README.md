@@ -1,12 +1,18 @@
 # Implicit Image Compression: Encoding Pictures with Implicit Neural Representations
 ### IEEE International Conference on Image Processing  (ICIP) 2024
 
+Lorenzo Catania, Dario Allegra
+
+University of Catania
+
+Contact e-mail: lorenzo.catania@phd.unict.it
+
 ## Setup 
 
-- Make sure to clone the *live* branch
 - Download and install the [pixi](https://pixi.sh/) project manager
 - Run ```pixi r capabilities``` and check if CUDA is available in your system. Although this is not mandatory, it is highly recommended as the code is computationally intensive.
-
+- Every bin script (*fit*, *pack*...) executes a different phase of the training. The *encode* and *decode* scripts perform the whole encoding and decoding pipelines instead.  
+  
 ## Tutorial Abstract
 
 Implicit Neural Representations (INRs) are a very recent paradigm for information representation where discrete data are interpreted as continuous functions from coordinates to samples. In the case of images, this function maps each pixel’s coordinates to the colour of the pixels. A neural network is then over-fit to this function, then the image is reconstructed through inference of this network. By following this workflow, the image data are encoded as network parameters.
